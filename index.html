@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GrandLuxe Hotel &amp; Suite — Smart Booking Engine &amp; Management Suite</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@300;400;600&family=Cairo:wght@400;600&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{--obsidian:#0B0C10;--gold:#D4AF37;--white:#F5F7FA;--glass:rgba(255,255,255,.05);--glassbr:rgba(212,175,55,.35)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--obsidian);color:var(--white);font-family:Inter,'Segoe UI',sans-serif;overflow-x:hidden}
+body[dir="rtl"]{font-family:Cairo,Amiri,Inter,sans-serif}
+h1,h2,h3,.serif{font-family:'Playfair Display',serif}
+body[dir="rtl"] h1,body[dir="rtl"] h2,body[dir="rtl"] h3,body[dir="rtl"] .serif{font-family:Amiri,Cairo,serif}
+.glass{background:var(--glass);border:1px solid var(--glassbr);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:18px}
+.gold{color:var(--gold)}
+section{padding:56px 6vw}
+.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;padding:12px 4vw;background:rgba(11,12,16,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--glassbr);flex-wrap:wrap}
+.logo{font-family:'Playfair Display',serif;font-size:1.35rem;letter-spacing:2px;color:var(--gold);font-weight:700}
+.logo small{color:var(--white);opacity:.7;font-size:.6rem;letter-spacing:4px;display:block}
+.navlink{color:var(--white);opacity:.8;cursor:pointer;font-size:.85rem;padding:6px 10px;border-radius:8px;transition:.2s}
+.navlink:hover,.navlink.active{opacity:1;color:var(--gold);background:rgba(212,175,55,.08)}
+select,input,textarea{background:rgba(255,255,255,.06);border:1px solid var(--glassbr);color:var(--white);border-radius:10px;padding:9px 12px;font-family:inherit;font-size:.88rem;outline:none;width:100%}
+select option{background:#14161d}
+input:focus,select:focus,textarea:focus{border-color:var(--gold)}
+.btn{background:linear-gradient(135deg,#D4AF37,#a8862a);color:#0B0C10;border:none;padding:11px 20px;border-radius:12px;font-weight:600;cursor:pointer;transition:.25s;font-family:inherit}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(212,175,55,.35)}
+.btn.ghost,.ghost{background:transparent;border:1px solid var(--glassbr);color:var(--gold);padding:8px 14px;border-radius:10px;cursor:pointer;font-family:inherit;font-size:.82rem;transition:.2s}
+.ghost:hover{background:rgba(212,175,55,.12)}
+.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.68rem;border:1px solid var(--glassbr);color:var(--gold);letter-spacing:1px}
+#heroCanvas{width:100%;height:74vh;display:block;cursor:grab}
+.hero-overlay{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;pointer-events:none;padding:0 6vw}
+.hero-overlay h1{font-size:clamp(2.2rem,5.5vw,4.4rem);text-shadow:0 4px 40px rgba(0,0,0,.8)}
+.hero-overlay p{margin-top:14px;opacity:.85;max-width:640px;font-size:1.02rem}
+.hero-wrap{position:relative}
+.grid{display:grid;gap:20px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.card{padding:22px}
+.roomcard img,.banner video,.banner canvas.fallback{width:100%;height:230px;object-fit:cover;border-radius:14px;display:block}
+.price{font-size:1.5rem;font-weight:700;color:var(--gold)}
+.kpi{font-size:1.9rem;font-weight:700;color:var(--gold);font-family:'Playfair Display',serif}
+.banner{position:relative;overflow:hidden;border-radius:20px;margin-bottom:14px}
+.banner .btext{position:absolute;inset:auto 0 0 0;padding:22px;background:linear-gradient(transparent,rgba(11,12,16,.9))}
+.banner .bctrl{position:absolute;top:12px;right:12px;display:flex;gap:8px}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th,td{padding:9px 10px;text-align:left;border-bottom:1px solid rgba(255,255,255,.08)}
+body[dir="rtl"] th,body[dir="rtl"] td{text-align:right}
+th{color:var(--gold);font-weight:600;letter-spacing:.5px}
+.st-chip{padding:3px 10px;border-radius:99px;font-size:.7rem;font-weight:600}
+.st-Occupied{background:rgba(229,72,77,.2);color:#ff8a8f}.st-Available{background:rgba(63,208,146,.15);color:#7fe0b0}
+.st-Cleaning{background:rgba(90,170,255,.15);color:#8fc4ff}.st-Reserved{background:rgba(212,175,55,.18);color:var(--gold)}
+#chatDock{position:fixed;bottom:20px;inset-inline-end:20px;z-index:99}
+#chatWin{display:none;width:360px;max-height:66vh;flex-direction:column;overflow:hidden;padding:0}
+#chatWin.open{display:flex}
+#chatBody{overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;min-height:220px;flex:1}
+.msg{padding:9px 13px;border-radius:14px;max-width:85%;font-size:.84rem;line-height:1.45}
+.msg.bot{background:rgba(255,255,255,.06);align-self:flex-start}
+.msg.user{background:linear-gradient(135deg,rgba(212,175,55,.25),rgba(212,175,55,.1));align-self:flex-end}
+#chatFab{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#D4AF37,#8f6f1d);border:none;font-size:1.5rem;cursor:pointer;box-shadow:0 10px 30px rgba(212,175,55,.4);float:right}
+.rackcell{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;cursor:pointer;font-size:.78rem;font-weight:600;border:1px solid rgba(255,255,255,.12);transition:.2s;text-align:center;padding:4px}
+.rackcell:hover{transform:scale(1.06);border-color:var(--gold)}
+.modebtn{padding:7px 14px;border-radius:10px;border:1px solid var(--glassbr);background:transparent;color:var(--white);cursor:pointer;font-size:.8rem}
+.modebtn.active{background:linear-gradient(135deg,#D4AF37,#a8862a);color:#0B0C10;font-weight:700}
+.cfg-label{font-size:.72rem;text-transform:uppercase;letter-spacing:1.5px;opacity:.65;margin:14px 0 6px}
+.modal{position:fixed;inset:0;background:rgba(5,6,10,.75);z-index:120;display:none;align-items:center;justify-content:center;padding:5vh 5vw}
+.modal.open{display:flex}
+.modal .inner{max-width:900px;width:100%;max-height:88vh;overflow-y:auto;padding:32px}
+.archstep{display:flex;gap:14px;margin:14px 0;align-items:flex-start}
+.archdot{min-width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#D4AF37,#7a5f14);display:flex;align-items:center;justify-content:center;font-weight:700;color:#0B0C10}
+.dropzone{border:2px dashed var(--glassbr);border-radius:14px;padding:26px;text-align:center;cursor:pointer;transition:.2s}
+.dropzone.drag{background:rgba(212,175,55,.1);border-color:var(--gold)}
+.fadein{animation:fi .7s ease both}@keyframes fi{from{opacity:0;transform:translateY(18px)}to{opacity:1}}
+.float{animation:fl 5s ease-in-out infinite}@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+hr.sep{border:none;border-top:1px solid var(--glassbr);margin:10px 0 18px}
+.small{font-size:.78rem;opacity:.7}
+footer{padding:36px 6vw;border-top:1px solid var(--glassbr);text-align:center;opacity:.7;font-size:.8rem}
+.hidden{display:none!important}
+#cfg3dCanvas{width:100%;height:420px;border-radius:16px;cursor:grab;display:block}
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#D4AF37,#a8862a);color:#0B0C10;padding:12px 26px;border-radius:14px;font-weight:600;z-index:200;box-shadow:0 10px 40px rgba(0,0,0,.6);animation:fi .3s ease}
+
+/* V2 3D CMS: responsive controls and touch-safe canvases */
+#heroCanvas,#cfg3dCanvas{touch-action:none;max-width:100%}
+#cfg3dCanvas{height:clamp(300px,48vw,560px)}
+#configurator .grid[style*="grid-template-columns"]{grid-template-columns:minmax(0,1.4fr) minmax(270px,1fr)!important;align-items:stretch}
+.cms-3d{padding:4px 2px}.cms-3d select{margin-top:7px}.mood-controls{display:flex;gap:8px;flex-wrap:wrap}.mood-controls .modebtn{flex:1;min-width:92px}.model-url-row{display:flex;gap:8px;align-items:stretch}.model-url-row input{min-width:0;flex:1}.model-url-row .btn{white-space:nowrap;padding:9px 13px}.cms-help{margin-top:7px}#modelStatus{min-height:1.1em;margin-top:5px;color:#d4af37}
+@media(max-width:760px){section{padding:38px 5vw}#heroCanvas{height:65vh;min-height:410px}.hero-overlay{padding:0 5vw}.hero-overlay p{font-size:.92rem}#configurator .grid[style*="grid-template-columns"]{grid-template-columns:minmax(0,1fr)!important}#cfg3dCanvas{height:clamp(290px,75vw,440px)}.cms-3d{padding:8px}.mood-controls .modebtn{min-width:calc(33.333% - 8px);padding:8px 7px}.model-url-row{flex-direction:column}.model-url-row .btn{width:100%}.topbar{gap:8px}.topbar>div[style*="flex:1"]{display:none}.navlink{font-size:.75rem;padding:6px}.topbar select{max-width:110px!important}.grid.g2,.grid.g3,.grid.g4{grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))}}
+@media(max-width:420px){.topbar{justify-content:center}.logo{width:100%;text-align:center}.badge#rbacBadge{display:none}.hero-overlay h1{font-size:2rem}.mood-controls{gap:5px}.mood-controls .modebtn{font-size:.72rem;padding:8px 4px}.card{padding:16px}}
+
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo">GrandLuxe<small>HOTEL &amp; SUITE</small></div>
+  <div style="flex:1"></div>
+  <span class="navlink active" data-nav="guest">🏠 <span data-i18n="nav_guest">Guest</span></span>
+  <span class="navlink" data-nav="panelA">🅰️ <span data-i18n="nav_panelA">Hotelier Panel</span></span>
+  <span class="navlink" data-nav="panelB">🅱️ <span data-i18n="nav_panelB">CMS Panel</span></span>
+  <span class="badge" id="rbacBadge">RBAC: GUEST</span>
+  <select id="langSel" style="width:120px">
+    <option value="en">EN · English</option><option value="tr">TR · Türkçe</option>
+    <option value="ru">RU · Русский</option><option value="de">DE · Deutsch</option>
+    <option value="ar">AR · العربية</option>
+  </select>
+  <select id="curSel" style="width:130px">
+    <option value="TRY">₺ TRY</option><option value="EUR">€ EUR</option>
+    <option value="USD">$ USD</option><option value="RUB">₽ RUB</option>
+    <option value="GBP">£ GBP</option><option value="AED">د.إ AED</option>
+  </select>
+</div>
+<!-- ============ GUEST FRONT ============ -->
+<div id="view_guest">
+<div class="hero-wrap">
+  <canvas id="heroCanvas"></canvas>
+  <div class="hero-overlay">
+    <span class="badge float">★★★★★ ALANYA · TÜRKİYE</span>
+    <h1 data-i18n="hero_title">GrandLuxe Hotel &amp; Suite</h1>
+    <p data-i18n="hero_sub">Ultra-luxury smart booking on the Mediterranean. Drag to rotate the 3D scene.</p>
+    <div style="pointer-events:auto;margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+      <button class="btn" onclick="document.getElementById('booking').scrollIntoView({behavior:'smooth'})" data-i18n="book_now">Book Now</button>
+      <button class="ghost" id="autoRotBtn" onclick="toggleAutoRot()" data-i18n="auto_rot">⟳ Auto-Rotate: ON</button>
+    </div>
+  </div>
+</div>
+
+<section id="booking">
+  <h2 class="gold" data-i18n="search_title">Smart Room Search Engine</h2><hr class="sep">
+  <div class="glass card grid g4">
+    <div><div class="cfg-label" data-i18n="checkin">Check-in</div><input type="date" id="ci" value="2026-11-01"></div>
+    <div><div class="cfg-label" data-i18n="checkout">Check-out</div><input type="date" id="co" value="2026-11-05"></div>
+    <div><div class="cfg-label" data-i18n="guests">Guests</div><select id="gc"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>6</option></select></div>
+    <div><div class="cfg-label" data-i18n="suite_type">Suite Type</div><select id="st"><option value="all" data-i18n="all_types">All Suites</option><option data-i18n="deluxe">Deluxe Suite</option><option data-i18n="penthouse">Royal Penthouse</option><option data-i18n="villa">Sea View Villa</option><option data-i18n="imperial">Imperial Lagoon Residence</option></select></div>
+  </div>
+  <div class="grid g3" id="roomsGrid" style="margin-top:24px"></div>
+</section>
+
+<section id="configurator">
+  <h2 class="gold" data-i18n="cfg_title">3D Room Configurator</h2><hr class="sep">
+  <div class="grid" style="grid-template-columns:1.4fr 1fr">
+    <div class="glass" style="padding:14px"><canvas id="cfg3dCanvas"></canvas></div>
+    <div class="glass card">
+      <div class="cms-3d" aria-label="3D scene customizer">
+        <div class="cfg-label">CMS · Default 3D Showcase Scene</div>
+        <label class="small" for="sceneSelect">Choose a hotel experience</label>
+        <select id="sceneSelect" onchange="selectShowcaseScene(this.value)">
+          <option value="royal">Royal Suite (King Bed &amp; Gold Ambience)</option>
+          <option value="villa">Sunset Villa (Private Pool &amp; Balcony)</option>
+          <option value="spa">Spa &amp; Wellness (Turkish Bath &amp; Steam)</option>
+          <option value="yacht">Yacht Club (Luxury Yacht &amp; Ocean Waves)</option>
+        </select>
+        <div class="cfg-label">Lighting mood</div>
+        <div class="mood-controls" role="group" aria-label="Lighting mood">
+          <button class="modebtn active" data-mood="day" onclick="setMood('day')">☀ Day</button>
+          <button class="modebtn" data-mood="sunset" onclick="setMood('sunset')">🌇 Sunset</button>
+          <button class="modebtn" data-mood="midnight" onclick="setMood('midnight')">☾ Midnight</button>
+        </div>
+        <div class="cfg-label">Custom GLB / GLTF model URL</div>
+        <div class="model-url-row"><input id="modelUrl" type="url" inputmode="url" placeholder="https://…/hotel-model.glb" aria-label="Custom GLB or GLTF model URL"><button class="btn" type="button" onclick="loadCustomModel()">Load model</button></div>
+        <p class="small cms-help">Paste a public .glb or .gltf URL. The model replaces the procedural showcase in the configurator.</p>
+        <div class="small" id="modelStatus" role="status" aria-live="polite"></div>
+        <div class="cfg-label">Navigation</div><p class="small">Drag to orbit · pinch/scroll to zoom · two-finger drag to pan</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="banners">
+  <h2 class="gold" data-i18n="experiences">Cinematic Experiences</h2><hr class="sep">
+  <div class="banner glass"><div class="bmedia" data-section="Spa"></div><div class="btext"><h3 data-i18n="spa">Spa &amp; Wellness — Ottoman Hammam</h3><p class="small" data-i18n="spa_d">Aromatherapy rituals, hammam and hydrotherapy above the sea.</p></div></div>
+  <div class="banner glass"><div class="bmedia" data-section="Fine Dining Restaurant"></div><div class="btext"><h3 data-i18n="dining">Fine Dining Restaurant</h3><p class="small" data-i18n="dining_d">Michelin-inspired Mediterranean gastronomy with sommelier cellar.</p></div></div>
+  <div class="banner glass"><div class="bmedia" data-section="Private Beach"></div><div class="btext"><h3 data-i18n="beach">Private Beach &amp; Yacht Club</h3><p class="small" data-i18n="beach_d">Cleopatra beach, private lagoon and sunset yacht cruises.</p></div></div>
+</section>
+
+<section id="vip">
+  <h2 class="gold" data-i18n="vip_addons">VIP Experience Add-ons</h2><hr class="sep">
+  <div class="grid g2" id="vipBtns"></div>
+</section>
+
+<section id="invoiceSec">
+  <div class="glass card" style="max-width:640px;margin:auto">
+    <h3 class="gold" data-i18n="final_invoice">Final Itemized Invoice</h3><hr class="sep">
+    <div id="invoiceBody" class="small"></div>
+    <button class="btn" style="width:100%;margin-top:14px" onclick="doBooking()" data-i18n="confirm_booking">Confirm Reservation → Send to Front Desk</button>
+    <div class="small" style="margin-top:8px" data-i18n="invoice_note">Your reservation appears instantly in the Hotelier Front Desk dashboard.</div>
+  </div>
+</section>
+</div>
+
+<!-- ============ PANEL A : HOTELIER & FRONT DESK ============ -->
+<div id="view_panelA" class="hidden">
+<section>
+  <h2 class="gold">🅰️ <span data-i18n="panelA_title">Hotelier &amp; Front Desk Operations Dashboard</span> <span class="badge" id="rbacA">RBAC: HOTELIER</span></h2><hr class="sep">
+  <h3 data-i18n="rack_title">Interactive Room Rack Calendar</h3>
+  <p class="small" data-i18n="rack_hint">Click a room to cycle status: Available → Occupied → Cleaning → Reserved</p>
+  <div class="grid" id="roomRack" style="grid-template-columns:repeat(auto-fill,minmax(105px,1fr));margin:14px 0"></div>
+  <h3 data-i18n="res_title">Reservation Management</h3>
+  <div class="glass card" style="overflow-x:auto;margin:12px 0"><table id="resTable"></table></div>
+  <h3 data-i18n="analytics">Financial &amp; Performance Analytics</h3>
+  <div class="grid g4" id="kpiCards" style="margin:14px 0"></div>
+  <div class="grid g2">
+    <div class="glass card"><canvas id="chartOcc" height="150"></canvas></div>
+    <div class="glass card"><canvas id="chartRev" height="150"></canvas></div>
+  </div>
+  <h3 data-i18n="vip_queue" style="margin-top:26px">VIP Orders &amp; AI Concierge Requests Queue</h3>
+  <div class="grid g2" id="vipQueue" style="margin:12px 0"></div>
+</section>
+</div>
+
+<!-- ============ PANEL B : CMS & TECH ============ -->
+<div id="view_panelB" class="hidden">
+<section>
+  <h2 class="gold">🅱️ <span data-i18n="panelB_title">Platform CMS &amp; Technical Customizer Dashboard</span> <span class="badge" id="rbacB">RBAC: ADMIN</span></h2><hr class="sep">
+  <h3 data-i18n="cms_title">Full Suite/Room Card CMS</h3>
+  <div class="glass card" style="margin:12px 0;overflow-x:auto"><table id="cmsTable"></table></div>
+  <div class="glass card grid g2" id="cmsAddForm" style="margin-bottom:22px"></div>
+  <h3 data-i18n="hero_custom">Hero, 3D Banner &amp; Motion Graphics Customizer</h3>
+  <div class="glass card grid g2" id="heroCustomizer" style="margin:12px 0"></div>
+  <h3 data-i18n="media_hub" style="margin-top:22px">Media Showcase Hub</h3>
+  <div class="glass card" style="margin:12px 0">
+    <div class="dropzone" id="mediaDropzone"><b data-i18n="drop_here">Drag &amp; drop video / image files here</b><p class="small" data-i18n="or_url">or add by URL:</p>
+      <div style="display:flex;gap:8px;max-width:560px;margin:10px auto"><input id="mediaUrl" placeholder="https://… .mp4"><select id="mediaSection" style="width:190px"><option>Spa</option><option>Fine Dining Restaurant</option><option>Private Beach</option><option>Room Gallery</option></select><button class="ghost" onclick="addMediaByUrl()" data-i18n="add">Add</button></div>
+    </div>
+    <div class="grid g3" id="mediaGrid" style="margin-top:16px"></div>
+  </div>
+  <h3 data-i18n="i18n_editor" style="margin-top:22px">Live 5-Language i18n Dictionary Editor</h3>
+  <div class="glass card" style="margin:12px 0;overflow-x:auto"><table id="i18nTable"></table></div>
+  <h3 data-i18n="blueprint" style="margin-top:22px">Tech Stack Architecture Blueprint</h3>
+  <button class="btn" onclick="openModal('archModal')" data-i18n="open_blueprint">Open Architecture Blueprint</button>
+</section>
+</div>
+
+<!-- ============ MODALS / DOCKS ============ -->
+<div class="modal" id="archModal" onclick="if(event.target===this)closeModal('archModal')"><div class="glass inner" id="archBody"></div></div>
+
+<div id="chatDock">
+  <div class="glass" id="chatWin">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--glassbr);display:flex;align-items:center;gap:8px">
+      <b class="gold" data-i18n="concierge_title">AI Concierge 24/7</b><div style="flex:1"></div>
+      <button class="ghost" id="ttsBtn" onclick="toggleTTS()" title="Voice output">🔊</button>
+      <button class="ghost" onclick="toggleChat()">✕</button>
+    </div>
+    <div id="chatBody"></div>
+    <div style="padding:10px;display:flex;gap:8px;border-top:1px solid var(--glassbr)">
+      <button class="ghost" id="micBtn" onclick="voiceInput()" title="Voice input">🎙️</button>
+      <input id="chatInput" data-i18n-ph="concierge_ph" placeholder="Ask me anything…" onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="btn" style="padding:9px 14px" onclick="sendChat()">➤</button>
+    </div>
+  </div>
+  <button id="chatFab" onclick="toggleChat()">✨</button>
+</div>
+<footer>© 2026 GrandLuxe Hotel &amp; Suite · Alanya, Türkiye · <span data-i18n="footer">Smart Booking Engine &amp; Management Suite</span></footer>
+<script>
+const translations={
+ en:{nav_guest:'Guest',nav_panelA:'Hotelier Panel',nav_panelB:'CMS Panel',hero_title:'GrandLuxe Hotel & Suite',hero_sub:'Ultra-luxury smart booking on the Mediterranean. Drag to rotate the 3D scene.',book_now:'Book Now',auto_rot:'⟳ Auto-Rotate: ON',search_title:'Smart Room Search Engine',checkin:'Check-in',checkout:'Check-out',guests:'Guests',suite_type:'Suite Type',all_types:'All Suites',deluxe:'Deluxe Suite',penthouse:'Royal Penthouse',villa:'Sea View Villa',imperial:'Imperial Lagoon Residence',cfg_title:'3D Room Configurator',lighting:'Room Lighting',light_warm:'Warm Champagne Sunset',light_moon:'Ambient Moonlight',light_day:'Crystal Daylight',light_dim:'Romantic Gold Dim',suite_level:'Suite Level / Window View',view_deluxe:'Deluxe Suite — Mediterranean Sea View',view_pent:'Royal Penthouse — Panoramic Alanya Castle & Marina',view_villa:'Sea View Villa — Private Lagoon',vip_on_model:'VIP Add-ons on 3D Model',live_invoice:'Live Invoice',experiences:'Cinematic Experiences',spa:'Spa & Wellness — Ottoman Hammam',spa_d:'Aromatherapy rituals, hammam and hydrotherapy above the sea.',dining:'Fine Dining Restaurant',dining_d:'Michelin-inspired Mediterranean gastronomy with sommelier cellar.',beach:'Private Beach & Yacht Club',beach_d:'Cleopatra beach, private lagoon and sunset yacht cruises.',vip_addons:'VIP Experience Add-ons',final_invoice:'Final Itemized Invoice',confirm_booking:'Confirm Reservation → Send to Front Desk',invoice_note:'Your reservation appears instantly in the Hotelier Front Desk dashboard.',panelA_title:'Hotelier & Front Desk Operations Dashboard',rack_title:'Interactive Room Rack Calendar',rack_hint:'Click a room to cycle status: Available → Occupied → Cleaning → Reserved',res_title:'Reservation Management',analytics:'Financial & Performance Analytics',vip_queue:'VIP Orders & AI Concierge Requests Queue',panelB_title:'Platform CMS & Technical Customizer Dashboard',cms_title:'Full Suite/Room Card CMS',hero_custom:'Hero, 3D Banner & Motion Graphics Customizer',media_hub:'Media Showcase Hub',drop_here:'Drag & drop video / image files here',or_url:'or add by URL:',add:'Add',i18n_editor:'Live 5-Language i18n Dictionary Editor',blueprint:'Tech Stack Architecture Blueprint',open_blueprint:'Open Architecture Blueprint',concierge_title:'AI Concierge 24/7',concierge_ph:'Ask me anything…',footer:'Smart Booking Engine & Management Suite'},
+ tr:{nav_guest:'Misafir',nav_panelA:'Otel Paneli',nav_panelB:'CMS Paneli',hero_title:'GrandLuxe Hotel & Suite',hero_sub:'Akdeniz’de ultra lüks akıllı rezervasyon. 3D sahneyi döndürmek için sürükleyin.',book_now:'Rezervasyon Yap',auto_rot:'⟳ Otomatik Döndür: AÇIK',search_title:'Akıllı Oda Arama',checkin:'Giriş',checkout:'Çıkış',guests:'Misafirler',suite_type:'Suit Türü',all_types:'Tüm Suitler',deluxe:'Deluxe Suit',penthouse:'Royal Penthouse',villa:'Deniz Manzaralı Villa',imperial:'Imperial Lagün Rezidansı',cfg_title:'3D Oda Konfigüratörü',lighting:'Oda Aydınlatması',light_warm:'Sıcak Şampanya Günbatımı',light_moon:'Ortam Ay Işığı',light_day:'Kristal Gün Işığı',light_dim:'Romantik Altın Loş',suite_level:'Suit Seviyesi / Pencere Manzarası',view_deluxe:'Deluxe Suit — Akdeniz Manzarası',view_pent:'Royal Penthouse — Alanya Kalesi ve Marina',view_villa:'Deniz Manzaralı Villa — Özel Lagün',vip_on_model:'3D Modelde VIP Ekstralar',live_invoice:'Canlı Fatura',experiences:'Sinematik Deneyimler',spa:'Spa & Wellness — Osmanlı Hamamı',spa_d:'Deniz üzerinde aromaterapi, hamam ve hidroterapi.',dining:'Fine Dining Restoran',dining_d:'Sommelier mahzeniyle Akdeniz gastronomisi.',beach:'Özel Plaj & Yat Kulübü',beach_d:'Kleopatra plajı, lagün ve günbatımı yat turları.',vip_addons:'VIP Deneyim Ekstraları',final_invoice:'Kalemli Son Fatura',confirm_booking:'Rezervasyonu Onayla → Resepsiyona Gönder',invoice_note:'Rezervasyonunuz resepsiyon panelinde anında görünür.',panelA_title:'Otel ve Resepsiyon Operasyon Paneli',rack_title:'Etkileşimli Oda Rack Takvimi',rack_hint:'Durum değiştirmek için odaya tıklayın',res_title:'Rezervasyon Yönetimi',analytics:'Finansal ve Performans Analitiği',vip_queue:'VIP Siparişler ve Concierge Talepleri',panelB_title:'Platform CMS ve Teknik Özelleştirme Paneli',cms_title:'Suit/Oda Kartı CMS',hero_custom:'Hero, 3D Banner ve Hareket Özelleştirici',media_hub:'Medya Vitrin Merkezi',drop_here:'Video / görselleri buraya sürükleyin',or_url:'veya URL ile ekleyin:',add:'Ekle',i18n_editor:'Canlı 5 Dil Sözlük Düzenleyicisi',blueprint:'Teknoloji Mimarisi',open_blueprint:'Mimari Planı Aç',concierge_title:'7/24 AI Concierge',concierge_ph:'Bana sorun…',footer:'Akıllı Rezervasyon ve Yönetim Paketi'},
+ ru:{nav_guest:'Гостям',nav_panelA:'Панель отеля',nav_panelB:'CMS панель',hero_title:'GrandLuxe Hotel & Suite',hero_sub:'Ультра-люкс бронирование на Средиземном море. Перетащите для вращения 3D.',book_now:'Забронировать',auto_rot:'⟳ Автоповорот: ВКЛ',search_title:'Умный поиск номеров',checkin:'Заезд',checkout:'Выезд',guests:'Гости',suite_type:'Тип номера',all_types:'Все номера',deluxe:'Делюкс сьют',penthouse:'Королевский пентхаус',villa:'Вилла с видом на море',imperial:'Императорская резиденция',cfg_title:'3D конфигуратор номера',lighting:'Освещение номера',light_warm:'Тёплый закат шампанского',light_moon:'Лунный свет',light_day:'Кристальный дневной свет',light_dim:'Романтический золотой свет',suite_level:'Уровень / Вид из окна',view_deluxe:'Делюкс — Средиземное море',view_pent:'Пентхаус — Замок Аланьи и марина',view_villa:'Вилла — Частная лагуна',vip_on_model:'VIP-дополнения в 3D',live_invoice:'Счёт в реальном времени',experiences:'Кинематографические впечатления',spa:'Спа и велнес — Османский хаммам',spa_d:'Ароматерапия, хаммам и гидротерапия у моря.',dining:'Ресторан высокой кухни',dining_d:'Средиземноморская гастрономия и винный погреб.',beach:'Частный пляж и яхт-клуб',beach_d:'Пляж Клеопатры, лагуна и яхтенные круизы.',vip_addons:'VIP услуги',final_invoice:'Подробный счёт',confirm_booking:'Подтвердить → На стойку регистрации',invoice_note:'Бронирование сразу появится на панели отеля.',panelA_title:'Панель отеля и стойки регистрации',rack_title:'Интерактивная карта номеров',rack_hint:'Нажмите номер для смены статуса',res_title:'Управление бронированиями',analytics:'Финансовая аналитика',vip_queue:'VIP заказы и запросы консьержу',panelB_title:'CMS и техническая панель',cms_title:'CMS номеров и сьютов',hero_custom:'Настройка Hero и 3D графики',media_hub:'Медиа-галерея',drop_here:'Перетащите видео / фото сюда',or_url:'или добавьте URL:',add:'Добавить',i18n_editor:'Редактор переводов на 5 языках',blueprint:'Архитектура технологий',open_blueprint:'Открыть схему',concierge_title:'Консьерж AI 24/7',concierge_ph:'Задайте вопрос…',footer:'Умная система бронирования и управления'},
+ de:{nav_guest:'Gäste',nav_panelA:'Hotel-Dashboard',nav_panelB:'CMS-Dashboard',hero_title:'GrandLuxe Hotel & Suite',hero_sub:'Ultra-Luxus-Buchung am Mittelmeer. Ziehen zum Drehen der 3D-Szene.',book_now:'Jetzt buchen',auto_rot:'⟳ Auto-Rotation: AN',search_title:'Intelligente Zimmersuche',checkin:'Anreise',checkout:'Abreise',guests:'Gäste',suite_type:'Suite-Typ',all_types:'Alle Suiten',deluxe:'Deluxe Suite',penthouse:'Royal Penthouse',villa:'Sea View Villa',imperial:'Imperial Lagoon Residence',cfg_title:'3D-Zimmerkonfigurator',lighting:'Zimmerbeleuchtung',light_warm:'Warmer Champagner-Sonnenuntergang',light_moon:'Mondlicht',light_day:'Kristall-Tageslicht',light_dim:'Romantisches Goldlicht',suite_level:'Suite / Fensteraussicht',view_deluxe:'Deluxe — Mittelmeerblick',view_pent:'Penthouse — Burg Alanya & Marina',view_villa:'Villa — Private Lagune',vip_on_model:'VIP-Extras im 3D-Modell',live_invoice:'Live-Rechnung',experiences:'Filmische Erlebnisse',spa:'Spa & Wellness — Osmanisches Hamam',spa_d:'Aromatherapie, Hamam und Hydrotherapie am Meer.',dining:'Fine-Dining-Restaurant',dining_d:'Mediterrane Küche und Sommelier-Weinkeller.',beach:'Privatstrand & Yachtclub',beach_d:'Kleopatra-Strand, Lagune und Yacht-Sonnenuntergang.',vip_addons:'VIP-Erlebnisse',final_invoice:'Detaillierte Rechnung',confirm_booking:'Buchung bestätigen → Rezeption',invoice_note:'Die Buchung erscheint sofort im Hotel-Dashboard.',panelA_title:'Hotel- und Rezeption-Dashboard',rack_title:'Interaktiver Zimmerplan',rack_hint:'Zimmer anklicken, um Status zu ändern',res_title:'Reservierungsverwaltung',analytics:'Finanz- und Leistungsanalysen',vip_queue:'VIP-Bestellungen & Concierge-Anfragen',panelB_title:'CMS & technisches Dashboard',cms_title:'Suite-/Zimmerkarten-CMS',hero_custom:'Hero-, 3D- und Motion-Anpassung',media_hub:'Medien-Showcase',drop_here:'Video / Bild hier ablegen',or_url:'oder URL hinzufügen:',add:'Hinzufügen',i18n_editor:'Live-Übersetzungseditor für 5 Sprachen',blueprint:'Technologiearchitektur',open_blueprint:'Architektur öffnen',concierge_title:'KI-Concierge 24/7',concierge_ph:'Fragen Sie mich…',footer:'Intelligente Buchungs- und Managementsuite'},
+ ar:{nav_guest:'النزلاء',nav_panelA:'لوحة الفندق',nav_panelB:'لوحة إدارة المحتوى',hero_title:'جراند لوكس للفنادق والأجنحة',hero_sub:'حجز فاخر على البحر المتوسط. اسحب لتدوير المشهد ثلاثي الأبعاد.',book_now:'احجز الآن',auto_rot:'⟳ الدوران التلقائي: تشغيل',search_title:'محرك البحث الذكي عن الغرف',checkin:'تاريخ الوصول',checkout:'تاريخ المغادرة',guests:'النزلاء',suite_type:'نوع الجناح',all_types:'جميع الأجنحة',deluxe:'جناح ديلوكس',penthouse:'بنتهاوس ملكي',villa:'فيلا بإطلالة بحرية',imperial:'إمبريال لاغون',cfg_title:'مهيئ الغرفة ثلاثي الأبعاد',lighting:'إضاءة الغرفة',light_warm:'غروب الشمبانيا الدافئ',light_moon:'ضوء القمر',light_day:'ضوء النهار البلوري',light_dim:'ضوء ذهبي رومانسي',suite_level:'الجناح / إطلالة النافذة',view_deluxe:'ديلوكس — إطلالة المتوسط',view_pent:'بنتهاوس — قلعة ألانيا والمارينا',view_villa:'فيلا — بحيرة خاصة',vip_on_model:'إضافات VIP على النموذج',live_invoice:'الفاتورة المباشرة',experiences:'تجارب سينمائية',spa:'سبا وعافية — حمام عثماني',spa_d:'علاج عطري وحمام مميز فوق البحر.',dining:'مطعم فاخر',dining_d:'مذاقات متوسطية وقبو نبيذ راقٍ.',beach:'شاطئ خاص ونادي اليخوت',beach_d:'شاطئ كليوباترا وبحيرة ورحلات يخت غروب الشمس.',vip_addons:'تجارب VIP',final_invoice:'الفاتورة المفصلة',confirm_booking:'تأكيد الحجز ← مكتب الاستقبال',invoice_note:'سيظهر الحجز فوراً في لوحة الفندق.',panelA_title:'لوحة الفندق والاستقبال',rack_title:'تقويم الغرف التفاعلي',rack_hint:'اضغط على الغرفة لتغيير الحالة',res_title:'إدارة الحجوزات',analytics:'التحليلات المالية والأداء',vip_queue:'طلبات VIP وطلبات المساعد',panelB_title:'لوحة إدارة المحتوى والتخصيص التقني',cms_title:'إدارة بطاقات الأجنحة والغرف',hero_custom:'تخصيص البانر والحركة ثلاثية الأبعاد',media_hub:'مركز الوسائط',drop_here:'اسحب ملفات الفيديو / الصور هنا',or_url:'أو أضف رابطاً:',add:'إضافة',i18n_editor:'محرر الترجمات المباشر بخمس لغات',blueprint:'مخطط البنية التقنية',open_blueprint:'فتح مخطط البنية',concierge_title:'مساعد ذكي ٢٤/٧',concierge_ph:'اسألني…',footer:'منصة الحجز والإدارة الذكية'}
+};
+let lang='en',currency='TRY';
+const fx={TRY:1,EUR:0.028,USD:0.030,RUB:2.75,GBP:0.024,AED:0.11},sym={TRY:'₺',EUR:'€',USD:'$',RUB:'₽',GBP:'£',AED:'د.إ'};
+const t=(k)=>translations[lang]?.[k]||translations.en[k]||k;
+function applyLang(){document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.body.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-i18n]').forEach(e=>{let v=t(e.dataset.i18n);if(v)e.textContent=v});document.querySelectorAll('[data-i18n-ph]').forEach(e=>e.placeholder=t(e.dataset.i18nPh));renderRooms();renderVIP();renderAll();renderMedia();renderLangEditor()}
+document.getElementById('langSel').onchange=e=>{lang=e.target.value;applyLang()};
+document.getElementById('curSel').onchange=e=>{currency=e.target.value;renderAll();renderRooms();renderCfgInvoice()};
+function money(n){return sym[currency]+(n*fx[currency]).toLocaleString(undefined,{maximumFractionDigits:0})}
+const rooms=[
+ {id:'deluxe',title:'Deluxe Suite',price:420,cap:2,view:'Mediterranean Sea View',badge:'SEA VIEW',img:'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=900&q=85'},
+ {id:'penthouse',title:'Royal Penthouse',price:1250,cap:4,view:'Alanya Castle & Marina Panorama',badge:'ROYAL',img:'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=900&q=85'},
+ {id:'villa',title:'Sea View Villa',price:1850,cap:6,view:'Private Lagoon',badge:'PRIVATE POOL',img:'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=900&q=85'},
+ {id:'imperial',title:'Imperial Lagoon Residence',price:2400,cap:8,view:'Private Lagoon & Marina',badge:'SIGNATURE',img:'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=900&q=85'}
+];
+let bookings=[],vipOrders=[],activeRoom='deluxe',selectedVIP=new Set(),roomCount=4;
+function nights(){let a=new Date(document.getElementById('ci').value),b=new Date(document.getElementById('co').value);return Math.max(1,Math.ceil((b-a)/86400000)||1)}
+['ci','co','gc','st'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{renderRooms();renderAll()}));
+function renderRooms(){let grid=document.getElementById('roomsGrid');if(!grid)return;let filter=document.getElementById('st')?.value||'all';let people=+document.getElementById('gc')?.value||2;
+ grid.innerHTML=rooms.filter(r=>(filter==='all'||r.title===filter)&&r.cap>=people).map(r=>`<article class="glass card roomcard fadein"><img src="${r.img}" alt="${r.title}" onerror="this.style.background='linear-gradient(135deg,#253b46,#D4AF37)';this.style.minHeight='230px'"><div style="display:flex;justify-content:space-between;margin-top:14px"><h3>${r.title}</h3><span class="badge">${r.badge}</span></div><p class="small" style="margin:8px 0">${r.view} · Up to ${r.cap} guests</p><div class="price">${money(r.price)} <span class="small">/ night</span></div><button class="ghost" style="margin-top:12px" onclick="selectRoom('${r.id}')">${t('cfg_title')} →</button></article>`).join('')||'<div class="glass card">No rooms match this search.</div>'}
+function selectRoom(id){activeRoom=id;document.getElementById('suiteSel').value=id==='imperial'?'villa':id;renderAll();document.getElementById('configurator').scrollIntoView({behavior:'smooth'})}
+const addons=[{id:'transfer',price:180,icon:'🚘',en:'Private Airport Transfer — Gazipaşa (GZP) / Antalya (AYT), Maybach / VIP Vito',tr:'Özel Havalimanı Transferi — GZP / AYT, Maybach / VIP Vito',ru:'VIP-трансфер GZP / AYT — Maybach / VIP Vito',de:'Privater Flughafentransfer GZP / AYT — Maybach / VIP Vito',ar:'نقل خاص من مطاري غازي باشا / أنطاليا بسيارات مايباخ / VIP Vito'},
+{id:'yacht',price:650,icon:'🛥️',en:'Private Yacht Sea Tour — Alanya Coast & Cleopatra Sunset Cruise',tr:'Özel Yat Turu — Alanya Sahili ve Kleopatra Gün Batımı',ru:'Частная яхта — побережье Аланьи и закат Клеопатры',de:'Private Yacht-Tour — Alanya-Küste & Cleopatra-Sonnenuntergang',ar:'جولة يخت خاصة — ساحل ألانيا ورحلة غروب كليوباترا'},
+{id:'spa',price:320,icon:'🧖',en:'Luxury Spa & Massage — Ottoman Hammam & Aromatherapy',tr:'Lüks Spa ve Masaj — Osmanlı Hamamı ve Aromaterapi',ru:'Спа и массаж — османский хаммам и ароматерапия',de:'Luxus-Spa & Massage — Osmanisches Hamam & Aromatherapie',ar:'سبا ومساج فاخر — حمام عثماني وعلاج عطري'},
+{id:'heli',price:1450,icon:'🚁',en:'Private Helicopter Transfer',tr:'Özel Helikopter Transferi',ru:'Частный трансфер на вертолёте',de:'Privater Helikoptertransfer',ar:'نقل خاص بطائرة هليكوبتر'},
+{id:'butler',price:480,icon:'🛎️',en:'24/7 Butler / Private Chef',tr:'7/24 Uşak / Özel Şef',ru:'Дворецкий / частный шеф 24/7',de:'Butler / Privatkoch rund um die Uhr',ar:'خادم شخصي / طاهٍ خاص على مدار الساعة'}];
+function addName(a){return a[lang]||a.en}
+function renderVIP(){let v=document.getElementById('vipBtns');if(!v)return;v.innerHTML=addons.map(a=>`<label class="glass card" style="display:flex;gap:12px;align-items:center;cursor:pointer"><input type="checkbox" style="width:20px;accent-color:#D4AF37" ${selectedVIP.has(a.id)?'checked':''} onchange="toggleVIP('${a.id}',this.checked)"><span style="font-size:1.5rem">${a.icon}</span><div style="flex:1"><b>${addName(a)}</b><div class="price" style="font-size:1.05rem">${money(a.price)}</div></div></label>`).join('');let c=document.getElementById('cfgVipBtns');if(c)c.innerHTML=addons.map(a=>`<button class="ghost" style="${selectedVIP.has(a.id)?'background:rgba(212,175,55,.2)':''}" onclick="toggleVIP('${a.id}',${!selectedVIP.has(a.id)})">${selectedVIP.has(a.id)?'✓ ':''}${a.icon}</button>`).join('')}
+function toggleVIP(id,on){on?selectedVIP.add(id):selectedVIP.delete(id);syncConfigVIP();renderVIP();renderAll();renderCfgInvoice()}
+function renderCfgInvoice(){let el=document.getElementById('cfgInvoice');if(!el)return;let r=rooms.find(x=>x.id===activeRoom)||rooms[0];el.innerHTML=`${r.title}: <b>${money(r.price)} × ${nights()} nights</b><br>${[...selectedVIP].map(id=>{let a=addons.find(x=>x.id===id);return `${a.icon} ${addName(a)} — ${money(a.price)}`}).join('<br>')||'No VIP add-ons selected'}`}
+function renderAll(){renderVIP();renderCfgInvoice();let body=document.getElementById('invoiceBody');if(!body)return;let r=rooms.find(x=>x.id===activeRoom)||rooms[0],n=nights(),base=r.price*n,extras=[...selectedVIP].map(id=>addons.find(a=>a.id===id)),sum=base+extras.reduce((s,a)=>s+a.price,0);body.innerHTML=`<div style="display:flex;justify-content:space-between;padding:6px 0"><span>${r.title} · ${n} nights · ${document.getElementById('gc').value} guests</span><b>${money(base)}</b></div>${extras.map(a=>`<div style="display:flex;justify-content:space-between;padding:6px 0"><span>${a.icon} ${addName(a)}</span><b>${money(a.price)}</b></div>`).join('')}<hr class="sep"><div style="display:flex;justify-content:space-between;font-size:1.1rem"><b>TOTAL</b><b class="gold">${money(sum)}</b></div>`}
+function syncConfigVIP(){/* 3D objects synced below */}
+// --- GrandLuxe Three.js V2: four procedural hotel scenes, OrbitControls, GLTFLoader ---
+const showcaseScenes={royal:'Royal Presidential Suite',villa:'Sunset Villa / Private Terrace',spa:'Spa & Turkish Hammam Sanctuary',yacht:'Private Marina & Yacht Club'};
+const moods={day:{bg:0x152735,ambient:1.05,key:2.4,keyColor:0xfff0d2,fill:1.15,fillColor:0x8bd6ef},sunset:{bg:0x3a1e2b,ambient:.72,key:2.7,keyColor:0xffa556,fill:1.05,fillColor:0x954f83},midnight:{bg:0x080f23,ambient:.45,key:1.35,keyColor:0x9ab8ff,fill:.75,fillColor:0x4769ae}};
+let activeShowcase='royal',activeMood='day',heroScene=null,configScene=null;
+const mat=(color,roughness=.55,metalness=0,extra={})=>new THREE.MeshStandardMaterial({color,roughness,metalness,...extra});
+function addMesh(g,geometry,material,pos,rot){const o=new THREE.Mesh(geometry,material);o.position.set(...pos);if(rot)o.rotation.set(...rot);o.castShadow=true;o.receiveShadow=true;g.add(o);return o}
+function box(g,w,h,d,m,x,y,z){return addMesh(g,new THREE.BoxGeometry(w,h,d),m,[x,y,z])}
+function makeWave(g,w=6,d=3,color=0x38a9ba){const geo=new THREE.PlaneGeometry(w,d,36,20);geo.rotateX(-Math.PI/2);const m=mat(color,.19,.28,{transparent:true,opacity:.86});const o=addMesh(g,geo,m,[0,-.15,0]);o.userData.wave=true;o.userData.base=geo.attributes.position.array.slice();return o}
+function createRoyal(g){
+ const floor=mat(0x66543d,.32,.18),wall=mat(0x20242d,.62),gold=mat(0xd4af37,.22,.8),linen=mat(0xf3eee3,.72),wood=mat(0x493323,.3),glass=mat(0x63b9d3,.1,.38,{transparent:true,opacity:.55});
+ box(g,6,.18,4,floor,0,-1.25,0);box(g,6,3,.14,wall,0,.22,-1.92);box(g,.14,3,4,wall,-3,.22,0);box(g,.14,3,4,wall,3,.22,0);
+ // panoramic glazing, mullions, horizon and private infinity plunge pool
+ box(g,5,2.05,.035,glass,0,.5,-1.82);for(let x of [-2.35,0,2.35])box(g,.045,2.15,.07,gold,x,.5,-1.75);box(g,5,.045,.07,gold,0,1.55,-1.75);
+ box(g,2.2,.24,1.55,wood,0,-.94,.36);box(g,2.28,.18,1.48,linen,0,-.73,.36);box(g,2.4,.92,.12,gold,0,-.26,-.42);box(g,2.22,.65,.08,mat(0x5c4630,.7),0,-.2,-.33);
+ for(let x of [-.64,.64]){box(g,.75,.16,.44,linen,x,-.52,-.05);box(g,.63,.42,.56,wood,x*2.1,-.98,.05);let lamp=addMesh(g,new THREE.CylinderGeometry(.16,.23,.22,20),gold,[x*2.1,-.65,.05]);addMesh(g,new THREE.PointLight(0xffc66e,1.5,4),new THREE.SphereGeometry(.12,14,10),[x*2.1,-.47,.05]);}
+ // lamp shades and nightstands
+ for(let x of [-2.05,2.05]){box(g,.58,.43,.55,wood,x,-.94,.12);addMesh(g,new THREE.CylinderGeometry(.08,.19,.24,18),gold,[x,-.59,.12]);addMesh(g,new THREE.SphereGeometry(.12,14,10),mat(0xffd891,.3,0,{emissive:0xffaa43,emissiveIntensity:1.4}),[x,-.42,.12]);}
+ box(g,2.8,.09,.72,gold,0,-1.02,1.57);box(g,2.65,.12,.57,glass,0,-.94,1.57);makeWave(g,2.5,.48,0x4fc6d4).position.set(0,-.85,1.57);
+ box(g,5,.08,.12,gold,0,-.89,-1.76);const view=addMesh(g,new THREE.SphereGeometry(.38,24,16),mat(0xffc477,.3,0,{emissive:0x8a3714,emissiveIntensity:.7}),[-2.2,.82,-1.66]);view.scale.set(1,.45,.12);
+}
+function createVilla(g){
+ const stone=mat(0xd5c4a3,.72),wall=mat(0x574234,.68),wood=mat(0x68452d,.38),fabric=mat(0xf1d9c1,.55,{transparent:true,opacity:.63}),gold=mat(0xd1a057,.3,.5);
+ box(g,6,.18,4,stone,0,-1.25,0);box(g,6,2.8,.14,wall,0,.15,-1.95);box(g,5,.08,.12,gold,0,1.1,-1.83);
+ for(let x of [-2.4,-1.2,0,1.2,2.4]){let curtain=box(g,.07,2.5,.06,fabric,x,.15,-1.67);curtain.userData.sway=true;}
+ // terrace pool with animated water and tile edging
+ box(g,4,.18,2.1,mat(0xbab19e,.32),0,-1.08,1.15);for(let [x,z,w,d] of [[0,.12,4,.08],[0,2.18,4,.08],[-1.96,1.15,.08,2.1],[1.96,1.15,.08,2.1]])box(g,w,.12,d,gold,x,-.96,z);
+ makeWave(g,3.75,1.9,0x26aabe).position.set(0,-.89,1.15);
+ for(let x of [-2.25,2.25]){box(g,.72,.16,1.45,wood,x,-.93,-.1);box(g,.74,.12,.72,mat(0xf0e8da,.85),x,-.82,-.24);let back=box(g,.72,.56,.1,wood,x,-.52,-.72);back.rotation.x=-.18;}
+ // balcony posts and metallic sheer canopy
+ for(let x of [-2.8,2.8])box(g,.08,1.2,.08,gold,x,-.2,.8);box(g,5.65,.07,.08,gold,0,.42,.8);
+ const sail=addMesh(g,new THREE.PlaneGeometry(5.6,1.65,20,5),fabric,[0,.49,.8],[-.16,0,0]);sail.userData.sway=true;
+}
+function createSpa(g){
+ const marble=mat(0xe4e0d8,.22,.12),vein=mat(0x777b80,.35,.08),gold=mat(0xb58a44,.28,.7),dark=mat(0x293033,.52),water=mat(0x50b6bd,.14,.25,{transparent:true,opacity:.78});
+ box(g,6,.18,4,marble,0,-1.25,0);box(g,6,2.8,.16,dark,0,.16,-1.92);
+ // marble slab, veining, raised hammam basin
+ box(g,3.2,.24,2.3,marble,0,-1.02,.1);for(let i=0;i<9;i++){const line=box(g,2.3,.012,.025,vein,(i%3-1)*.58,-.89,(Math.floor(i/3)-1)*.52);line.rotation.y=(i%2?.35:-.24);}
+ addMesh(g,new THREE.CylinderGeometry(1.12,1.12,.25,48),marble,[0,-.79,.15]);addMesh(g,new THREE.CylinderGeometry(.92,.92,.12,48),water,[0,-.6,.15]);makeWave(g,1.65,1.65,0x75d5d2).position.set(0,-.51,.15);
+ // traditional heated marble platform / central massage table
+ box(g,2.1,.25,.85,marble,0,-.64,-.7);box(g,1.8,.1,.68,mat(0xd3c6ae,.6),0,-.45,-.7);
+ for(let x of [-2.35,2.35]){addMesh(g,new THREE.CylinderGeometry(.19,.27,.72,12),gold,[x,-.71,-.35]);addMesh(g,new THREE.ConeGeometry(.32,.25,12),gold,[x,-.23,-.35]);addMesh(g,new THREE.PointLight(0xffad55,1.6,3),new THREE.SphereGeometry(.1,12,10),[x,-.35,-.35]);}
+ // steam particles rendered as softened translucent points
+ const n=110,positions=new Float32Array(n*3),phases=new Float32Array(n);for(let i=0;i<n;i++){positions[i*3]=(Math.random()-.5)*1.25;positions[i*3+1]=Math.random()*1.2-.45;positions[i*3+2]=(Math.random()-.5)*1.15+.15;phases[i]=Math.random()*Math.PI*2;}
+ const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(positions,3));const pts=new THREE.Points(geo,new THREE.PointsMaterial({color:0xffe8cf,size:.075,transparent:true,opacity:.42,depthWrite:false}));pts.userData.steam=true;pts.userData.phase=phases;g.add(pts);
+ // floating candle lights
+ for(let x of [-.65,0,.65]){addMesh(g,new THREE.CylinderGeometry(.09,.09,.04,16),gold,[x,-.48,.2]);addMesh(g,new THREE.PointLight(0xffb75e,.55,2),new THREE.SphereGeometry(.045,10,8),[x,-.38,.2]);}
+}
+function createYacht(g){
+ const sea=mat(0x197b98,.18,.3,{transparent:true,opacity:.92}),hull=mat(0xf5f4ef,.2,.68),chrome=mat(0xc5d2d8,.13,.9),teak=mat(0x9d6535,.53),glass=mat(0x193c50,.12,.55,{transparent:true,opacity:.84}),sailmat=mat(0xf1e8d3,.7,0,{side:THREE.DoubleSide});
+ makeWave(g,7,5,0x197b98).position.set(0,-1.02,0);
+ // bespoke yacht: tapered bow, sculpted hull, deck and cabin
+ const hullShape=new THREE.Shape();hullShape.moveTo(-2.65,0);hullShape.lineTo(2.45,0);hullShape.lineTo(1.75,.48);hullShape.lineTo(-1.85,.48);hullShape.close();const hullGeo=new THREE.ExtrudeGeometry(hullShape,{depth:1.05,bevelEnabled:true,bevelSegments:3,steps:1,bevelSize:.08,bevelThickness:.08});hullGeo.translate(0,0,-.525);addMesh(g,hullGeo,hull,[0,-.38,.15],[-Math.PI/2,0,0]);
+ box(g,3.85,.14,1.08,teak,0,.15,.15);for(let x=-1.7;x<=1.7;x+=.22)box(g,.018,.018,1.0,mat(0xd6a16b,.55),x,.23,.15);
+ box(g,1.55,.56,.82,mat(0xf5f3ed,.3),-.55,.48,.15);box(g,1.1,.33,.86,glass,-.55,.85,.15);box(g,.05,.7,.98,chrome,.35,.46,.15);
+ // modern mast and two crisp sails
+ const mast=addMesh(g,new THREE.CylinderGeometry(.035,.055,.5,12),chrome,[.75,1.45,.15]);const sail1=new THREE.Shape();sail1.moveTo(.78,1.63);sail1.lineTo(1.9,.4);sail1.lineTo(.82,.55);sail1.close();addMesh(g,new THREE.ShapeGeometry(sail1),sailmat,[0,0,.18]);
+ const sail2=new THREE.Shape();sail2.moveTo(.7,1.54);sail2.lineTo(-.05,.57);sail2.lineTo(.7,.65);sail2.close();addMesh(g,new THREE.ShapeGeometry(sail2),sailmat,[0,0,-.38]);
+ for(let x of [-1.9,1.6])box(g,.075,.46,.075,chrome,x,.42,.57);
+}
+function buildShowcase(key){const g=new THREE.Group();g.name='showcaseRoot';if(key==='villa')createVilla(g);else if(key==='spa')createSpa(g);else if(key==='yacht')createYacht(g);else createRoyal(g);return g}
+function applyMood(state,k){const m=moods[k]||moods.day;state.scene.background=new THREE.Color(m.bg);state.ambient.intensity=m.ambient;state.key.color.setHex(m.keyColor);state.key.intensity=m.key;state.fill.color.setHex(m.fillColor);state.fill.intensity=m.fill;state.ground.intensity=m.ambient*.48;}
+function selectShowcaseScene(key){if(!showcaseScenes[key])return;activeShowcase=key;for(const state of [heroScene,configScene])if(state)replaceShowcase(state,key);}
+function replaceShowcase(state,key){if(state.customRoot){state.scene.remove(state.customRoot);state.customRoot=null;}const old=state.group;if(old){state.scene.remove(old);old.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.dispose());});}state.group=buildShowcase(key);state.group.position.y=-.12;state.scene.add(state.group);state.customRoot=null;state.camera.position.set(key==='yacht'?0:0, key==='spa'?1.7:1.25, key==='yacht'?9.7:8.2);state.controls.target.set(0,-.05,0);state.controls.update();}
+function sceneInit(canvasId,isHero){const canvas=document.getElementById(canvasId);if(!canvas||!window.THREE)return null;let renderer;try{renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'high-performance'});}catch(e){canvas.insertAdjacentHTML('afterend','<p class="small">WebGL is unavailable on this device. Please use a WebGL-enabled browser.</p>');return null;}renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.75));renderer.setSize(canvas.clientWidth||600,canvas.clientHeight||400,false);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;
+ const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(42,(canvas.clientWidth||600)/(canvas.clientHeight||400),.1,100);camera.position.set(0,1.25,8.2);const ambient=new THREE.HemisphereLight(0xd8eaff,0x493820,1);scene.add(ambient);const key=new THREE.DirectionalLight(0xffdfa5,2.4);key.position.set(-3,6,5);key.castShadow=true;scene.add(key);const fill=new THREE.PointLight(0x8bd6ef,1.15,28);fill.position.set(4,2,3);scene.add(fill);const ground=new THREE.AmbientLight(0xffffff,.4);scene.add(ground);
+ const controls=window.THREE.OrbitControls?new THREE.OrbitControls(camera,renderer.domElement):null;if(controls){controls.enableDamping=true;controls.dampingFactor=.065;controls.minDistance=4.5;controls.maxDistance=14;controls.maxPolarAngle=Math.PI*.78;controls.target.set(0,-.05,0);controls.update();}
+ const state={canvas,renderer,scene,camera,controls,ambient,key,fill,ground,group:null,parts:[],hero:isHero,auto:true,rot:0,drag:false,lastX:0};replaceShowcase(state,activeShowcase);applyMood(state,activeMood);
+ const resize=()=>{if(!canvas.clientWidth||!canvas.clientHeight)return;renderer.setSize(canvas.clientWidth,canvas.clientHeight,false);camera.aspect=canvas.clientWidth/canvas.clientHeight;camera.updateProjectionMatrix();};if(window.ResizeObserver)new ResizeObserver(resize).observe(canvas);else window.addEventListener('resize',resize);
+ let last=0;function tick(ms){if(!canvas.isConnected){renderer.dispose();if(controls)controls.dispose();return;}requestAnimationFrame(tick);const dt=Math.min(.05,(ms-last)/1000||0);last=ms;state.group.traverse(o=>{if(o.userData.wave&&o.geometry.attributes.position){const a=o.geometry.attributes.position,base=o.userData.base;for(let i=0;i<a.count;i++){const x=base[i*3],z=base[i*3+2];a.setY(i,base[i*3+1]+Math.sin(x*3+ms*.0018)*.035+Math.cos(z*4+ms*.0014)*.025);}a.needsUpdate=true;o.geometry.computeVertexNormals();}if(o.userData.steam){const a=o.geometry.attributes.position,ph=o.userData.phase;for(let i=0;i<a.count;i++){a.setY(i,-.45+((ms*.00022+ph[i])%1.25));a.setX(i,Math.sin(ms*.0009+ph[i])*0.22);}}if(o.userData.sway)o.rotation.z=Math.sin(ms*.0008+o.position.x)*.025;});if(state.hero&&state.auto&&!state.drag&&!controls){state.group.rotation.y+=dt*.17;}if(controls)controls.update();renderer.render(scene,camera);}requestAnimationFrame(tick);return state;}
+function initScenes(){heroScene=sceneInit('heroCanvas',true);configScene=sceneInit('cfg3dCanvas',false);syncConfigVIP();}
+function toggleAutoRot(){if(heroScene){heroScene.auto=!heroScene.auto;if(heroScene.controls)heroScene.controls.autoRotate=heroScene.auto;}const b=document.getElementById('autoRotBtn');if(b)b.textContent=heroScene?.auto?'⟳ Auto-Rotate: ON':'⟳ Auto-Rotate: OFF';}
+function setMood(k){if(!moods[k])return;activeMood=k;[heroScene,configScene].forEach(s=>{if(s)applyMood(s,k)});document.querySelectorAll('[data-mood]').forEach(b=>b.classList.toggle('active',b.dataset.mood===k));}
+function setLight(k){setMood(({warm:'sunset',moon:'midnight',day:'day',dim:'midnight'})[k]||'day');}
+function setSuiteLevel(k){if(!configScene)return;configScene.camera.position.z=k==='penthouse'?9:k==='villa'?8:8.3;configScene.camera.updateProjectionMatrix();}
+function loadCustomModel(){const input=document.getElementById('modelUrl'),status=document.getElementById('modelStatus'),url=(input?.value||'').trim();if(!status)return;if(!url){status.textContent='Enter a public .glb or .gltf model URL.';return;}if(!/\.(glb|gltf)(?:[?#].*)?$/i.test(url)){status.textContent='The URL must point to a .glb or .gltf file.';return;}if(!window.THREE.GLTFLoader){status.textContent='GLTFLoader could not be loaded. Check your internet connection.';return;}status.textContent='Loading 3D model…';const loader=new THREE.GLTFLoader();loader.load(url,gltf=>{if(!configScene){status.textContent='3D configurator is not ready.';return;}if(configScene.customRoot){configScene.scene.remove(configScene.customRoot);configScene.customRoot.traverse(o=>{if(o.geometry)o.geometry.dispose();});}const model=gltf.scene;const box3=new THREE.Box3().setFromObject(model),size=box3.getSize(new THREE.Vector3()),center=box3.getCenter(new THREE.Vector3()),max=Math.max(size.x,size.y,size.z)||1;model.position.sub(center);model.scale.setScalar(4.2/max);model.position.y-=box3.min.y*4.2/max;configScene.group.visible=false;configScene.scene.add(model);configScene.customRoot=model;status.textContent='Model loaded. Procedural scene is preserved and can be restored by choosing a scene.';},undefined,err=>{console.error('GLTF load failed',err);status.textContent='Could not load model. Check URL, CORS access, and file format.';});}
+function syncConfigVIP(){/* VIP add-ons are managed by the booking interface; room showcase remains scene-specific. */}
+// Video cinematic panels: CDN video fallback + procedural animated canvas that works offline
+let mediaItems=[
+ {id:1,type:'video',title:'Spa & Wellness Loop',url:'https://videos.pexels.com/video-files/3752533/3752533-hd_1920_1080_25fps.mp4',section:'Spa'},
+ {id:2,type:'video',title:'Fine Dining Ambience',url:'https://videos.pexels.com/video-files/2620043/2620043-hd_1920_1080_25fps.mp4',section:'Fine Dining Restaurant'},
+ {id:3,type:'video',title:'Private Beach Sunset',url:'https://videos.pexels.com/video-files/3129671/3129671-hd_1920_1080_25fps.mp4',section:'Private Beach'}
+];
+const gradients={'Spa':'linear-gradient(120deg,#182826,#4d856f,#d4af37)','Fine Dining Restaurant':'linear-gradient(120deg,#160f11,#704633,#D4AF37)','Private Beach':'linear-gradient(120deg,#173846,#44a9b0,#f6bb6b)','Room Gallery':'linear-gradient(120deg,#222,#806d48,#f2e1bd)'};
+function addFallback(el,section){let c=document.createElement('canvas');c.className='fallback';c.style.cssText=`position:absolute;inset:0;width:100%;height:260px;z-index:0;background:${gradients[section]||gradients.Spa}`;el.appendChild(c);let ctx=c.getContext('2d'),phase=Math.random()*10;function draw(tm){if(!c.isConnected)return;let w=c.clientWidth||800,h=c.clientHeight||260,dpr=devicePixelRatio||1;if(c.width!==w*dpr||c.height!==h*dpr){c.width=w*dpr;c.height=h*dpr}ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);phase+=.008;for(let i=0;i<18;i++){let x=(i*71+Math.sin(phase+i)*36)%w,y=(i*43+Math.cos(phase*.7+i)*24)%h;ctx.beginPath();ctx.ellipse(x,y,45+Math.sin(phase+i)*15,15+Math.cos(phase+i)*8,Math.sin(i)*.5,0,Math.PI*2);ctx.fillStyle=`rgba(255,220,150,${.025+((Math.sin(phase+i)+1)*.018)})`;ctx.fill()}requestAnimationFrame(draw)}requestAnimationFrame(draw)}
+function renderMedia(){document.querySelectorAll('.bmedia').forEach(w=>{let sec=w.dataset.section,m=mediaItems.find(x=>x.section===sec);w.innerHTML='';w.style.cssText='position:relative;min-height:260px';addFallback(w,sec);if(m&&m.type==='video'){let v=document.createElement('video');v.src=m.url;v.autoplay=true;v.muted=true;v.loop=true;v.playsInline=true;v.style.cssText='position:absolute;inset:0;width:100%;height:260px;object-fit:cover;z-index:1;opacity:.75';v.onerror=()=>{v.remove()};w.appendChild(v);let ctrl=document.createElement('button');ctrl.className='ghost';ctrl.textContent='❚❚';ctrl.style.cssText='position:absolute;z-index:4;right:12px;top:12px';ctrl.onclick=()=>{if(v.paused){v.play();ctrl.textContent='❚❚'}else{v.pause();ctrl.textContent='▶'}};w.appendChild(ctrl)}});let grid=document.getElementById('mediaGrid');if(!grid)return;grid.innerHTML=mediaItems.map(m=>`<div class="glass card"><b>${m.title}</b> <span class="gold">· ${m.section}</span><div class="small" style="word-break:break-all;margin:6px 0">${m.type.toUpperCase()} — ${m.url}</div>${m.type==='video'?`<video src="${m.url}" muted loop autoplay playsinline onerror="this.style.display='none'" style="width:100%;max-height:140px;object-fit:cover;border-radius:10px"></video>`:`<img src="${m.url}" style="width:100%;max-height:140px;object-fit:cover;border-radius:10px">`}<div style="display:flex;gap:6px;margin-top:8px"><button class="ghost" onclick="applyMedia(${m.id})">Apply to section ▶</button><button class="ghost" onclick="deleteMedia(${m.id})">Delete ✕</button></div></div>`).join('')}
+function addMediaByUrl(){let u=document.getElementById('mediaUrl').value.trim();if(!u)return toast('Enter a media URL');let s=document.getElementById('mediaSection').value;mediaItems.push({id:Date.now(),type:/\.(mp4|webm|mov)(\?|$)/i.test(u)?'video':'image',title:'Custom media',url:u,section:s});document.getElementById('mediaUrl').value='';renderMedia()}
+function deleteMedia(id){mediaItems=mediaItems.filter(m=>m.id!==id);renderMedia()}
+function applyMedia(id){let m=mediaItems.find(x=>x.id===id);if(m){mediaItems=mediaItems.filter(x=>x.section!==m.section||x.id===id);renderMedia();toast('Media assigned to '+m.section)}}
+// --- AI Concierge with voice I/O in 5 languages ---
+let ttsOn=false;
+function toggleChat(){let w=document.getElementById('chatWin');w.classList.toggle('open');if(w.classList.contains('open')&&!w.dataset.greeted){w.dataset.greeted='1';let hi={en:'Welcome to GrandLuxe. Ask about breakfast hours, Wi-Fi, pool & spa, transfers, rates or say "book".',tr:'GrandLuxe’a hoş geldiniz. Kahvaltı, Wi-Fi, spa, transfer veya fiyatlar hakkında sorabilirsiniz.',ru:'Добро пожаловать в GrandLuxe. Спросите о завтраке, Wi-Fi, спа, трансфере или ценах.',de:'Willkommen im GrandLuxe. Fragen Sie zu Frühstück, WLAN, Spa, Transfer oder Preisen.',ar:'مرحباً بكم في جراند لوكس. اسأل عن الإفطار أو الواي فاي أو السبا أو النقل أو الأسعار.'};botSay(hi[lang]||hi.en)}}
+function toggleTTS(){ttsOn=!ttsOn;document.getElementById('ttsBtn').textContent=ttsOn?'🔊 ON':'🔇';toast(ttsOn?'Voice output ON':'Voice output OFF')}
+function botSay(txt){let b=document.getElementById('chatBody');let d=document.createElement('div');d.className='msg bot';d.textContent=txt;b.appendChild(d);b.scrollTop=b.scrollHeight;if(ttsOn&&window.speechSynthesis){let u=new SpeechSynthesisUtterance(txt);u.lang={en:'en-US',tr:'tr-TR',ru:'ru-RU',de:'de-DE',ar:'ar-SA'}[lang]||'en-US';speechSynthesis.speak(u)}}
+function voiceInput(){let SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return toast('SpeechRecognition not supported in this browser');let r=new SR();r.lang={en:'en-US',tr:'tr-TR',ru:'ru-RU',de:'de-DE',ar:'ar-SA'}[lang]||'en-US';r.onresult=e=>{document.getElementById('chatInput').value=e.results[0][0].transcript;sendChat()};r.onerror=()=>toast('Voice input error');r.start();toast('🎙️ Listening…')}
+const kb=[
+ {k:['breakfast','kahvaltı','завтрак','frühstück','إفطار'],a:{en:'Breakfast is served daily 07:00–11:00 at the Panorama Restaurant, with poolside VIP service from 07:30.',tr:'Kahvaltı her gün 07:00–11:00 arasında Panorama Restoran’da; havuz başı VIP servis 07:30’da başlar.',ru:'Завтрак ежедневно 07:00–11:00 в Panorama Restaurant, VIP-подача у бассейна с 07:30.',de:'Frühstück täglich 07:00–11:00 im Panorama Restaurant, VIP-Poolservice ab 07:30.',ar:'الإفطار يومياً من ٧:٠٠ إلى ١١:٠٠ في مطعم بانوراما، مع خدمة VIP عند المسبح من ٧:٣٠.'}},
+ {k:['wi-fi','wifi','вай-фай','wlan','واي'],a:{en:'The VIP Wi-Fi network is "GrandLuxe_Guest", password: GrandLuxe2026! (5 GHz, 1 Gbps).',tr:'VIP Wi-Fi ağı: "GrandLuxe_Guest", şifre: GrandLuxe2026! (5 GHz, 1 Gbps).',ru:'Сеть Wi-Fi: "GrandLuxe_Guest", пароль: GrandLuxe2026! (5 ГГц, 1 Гбит/с).',de:'WLAN: "GrandLuxe_Guest", Passwort: GrandLuxe2026! (5 GHz, 1 Gbit/s).',ar:'شبكة الواي فاي: GrandLuxe_Guest وكلمة المرور: GrandLuxe2026! (5 جيجاهرتز).'}},
+ {k:['pool','spa','hammam','массаж','ساونا','سبا','massage'],a:{en:'Our Spa offers an Ottoman hammam, infinity pool (06:00–23:00) and aromatherapy massage. Open the VIP Add-ons to book the Spa Package instantly.',tr:'Spa’mızda Osmanlı hamamı, sonsuzluk havuzu (06:00–23:00) ve aromaterapi masajı var. Spa paketini VIP ekstralarından anında ekleyebilirsiniz.',ru:'В спа — османский хаммам, бассейн инфинити (06:00–23:00) и ароматерапия. Пакет можно добавить в VIP-услугах.',de:'Unser Spa bietet Osmanisches Hamam, Infinity-Pool (06:00–23:00) und Aromatherapie. Das Paket finden Sie bei den VIP-Extras.',ar:'يضم السبا حماماً عثمانياً ومسبحاً لا متناهياً (٦:٠٠–٢٣:٠٠) وجلسات علاج عطري. أضف باقة السبا من خيارات VIP.'}},
+ {k:['airport','transfer','havalimanı','аэропорт','flughafen','مطار'],a:{en:'Private airport transfer from Gazipaşa (GZP, 40 min) or Antalya (AYT, 2 h) in a Mercedes-Maybach or VIP Vito. Add it from VIP Experience Add-ons.',tr:'Gazipaşa (GZP, 40 dk) veya Antalya (AYT, 2 sa) özel transferi Mercedes-Maybach veya VIP Vito ile. VIP ekstralarından ekleyin.',ru:'Трансфер из Газипаша (GZP, 40 мин) или Антальи (AYT, 2 ч) на Maybach или VIP Vito. Добавьте в VIP-услугах.',de:'Privater Transfer ab Gazipaşa (GZP, 40 Min.) oder Antalya (AYT, 2 Std.) im Maybach / VIP Vito. Bei den VIP-Extras buchbar.',ar:'نقل خاص من مطار غازي باشا (٤٠ دقيقة) أو أنطاليا (ساعتان) بسيارة مايباخ أو VIP Vito. أضفه من خيارات VIP.'}},
+ {k:['rate','price','fiyat','цена','preis','سعر'],a:{en:'Rates start at ₺420/night (Deluxe Suite), Royal Penthouse ₺1,250, Sea View Villa ₺1,850 — live in your currency via the top selector.',tr:'Fiyatlar ₺420/gece (Deluxe Suit), Royal Penthouse ₺1.250, Sea View Villa ₺1.850 — üst menüden kendi para biriminizde görün.',ru:'Тарифы от ₺420/ночь (Делюкс), пентхаус ₺1 250, вилла ₺1 850 — в вашей валюте в меню сверху.',de:'Ab ₺420/Nacht (Deluxe), Penthouse ₺1.250, Villa ₺1.850 — in Ihrer Währung oben wählbar.',ar:'الأسعار من ٤٢٠ ₺ لليلة (ديلوكس)، البنتهاوس ١٢٥٠، الفيلا ١٨٥٠ — بعملتك من القائمة أعلى الصفحة.'}},
+ {k:['yacht','boat','yat','яхт','يخت'],a:{en:'The Private Yacht Tour covers the Alanya coast and Cleopatra sunset cruise (₺650). I can add it to your invoice right now.',tr:'Özel Yat Turu Alanya sahili ve Kleopatra gün batımı turunu kapsar (₺650). Şimdi faturanıza ekleyebilirim.',ru:'Частная яхта: побережье Аланьи и закатный круиз Клеопатры (₺650). Могу добавить в счёт.',de:'Die private Yacht-Tour umfasst die Alanya-Küste und die Cleopatra-Sonnenuntergangsfahrt (₺650).',ar:'جولة اليخت تشمل ساحل ألانيا ورحلة غروب كليوباترا (٦٥٠ ₺). يمكنني إضافتها للفاتورة الآن.'}},
+ {k:['book','reserve','rezervasyon','бронь','buchen','حجز'],a:{en:'I can issue a live VIP/Service request to the Front Desk. Shall I create one? I have added it — the Hotelier Panel queue now shows your request.',tr:'Resepsiyona canlı VIP/Talep gönderebilirim — oluşturdum, Otel Paneli kuyruğunda görünüyor.',ru:'Я отправил VIP-запрос на стойку регистрации — он уже в очереди панели отеля.',de:'Ich habe eine VIP-Anfrage an die Rezeption gesendet — sie ist jetzt in der Hotel-Panel-Warteschlange.',ar:'تم إرسال طلب VIP إلى الاستقبال — يظهر الآن في قائمة لوحة الفندق.',issue:true}}
+];
+function sendChat(){let inp=document.getElementById('chatInput'),q=inp.value.trim();if(!q)return;inp.value='';let b=document.getElementById('chatBody');let d=document.createElement('div');d.className='msg user';d.textContent=q;b.appendChild(d);b.scrollTop=b.scrollHeight;let low=q.toLowerCase();let hit=kb.find(e=>e.k.some(k=>low.includes(k)));let ans=hit?(hit.a[lang]||hit.a.en):({en:'I am your 24/7 concierge. Ask about breakfast hours, Wi-Fi password, pool & spa, airport transfers, room rates or yacht tours — in any of our 5 languages.',tr:'7/24 concierge’ınızım. Kahvaltı, Wi-Fi, spa, transfer, fiyat veya yat turu sorabilirsiniz.',ru:'Я ваш консьерж 24/7. Спросите о завтраке, Wi-Fi, спа, трансфере, ценах или яхте.',de:'Ich bin Ihr Concierge 24/7. Fragen Sie zu Frühstück, WLAN, Spa, Transfer, Preisen oder Yacht.',ar:'أنا مساعدكم على مدار الساعة. اسأل عن الإفطار أو الواي فاي أو السبا أو النقل أو الأسعار أو اليخت.'})[lang];setTimeout(()=>{botSay(ans);if(hit&&hit.issue){vipOrders.unshift({id:Date.now(),type:'🤖 AI Concierge Request',guest:'Chatbot guest — "'+q.slice(0,40)+'"',status:'Pending'});renderQueue()}},500)}
+
+// --- PANEL A: Room Rack, Reservations, Analytics, VIP queue ---
+const statusCycle=['Available','Occupied','Cleaning','Reserved'];
+let roomStates={};function initRack(){for(let f=1;f<=5;f++)for(let n=1;n<=4;n++){let no=f*100+n;roomStates[no]=no%4===0?'Reserved':no%3===0?'Cleaning':no%2===0?'Occupied':'Available'}roomStates[504]='Occupied'}
+initRack();
+function renderRack(){let g=document.getElementById('roomRack');if(!g)return;g.innerHTML=Object.entries(roomStates).map(([no,s])=>`<div class="rackcell" style="background:${s==='Available'?'rgba(63,208,146,.14)':s==='Occupied'?'rgba(229,72,77,.16)':s==='Cleaning'?'rgba(90,170,255,.14)':'rgba(212,175,55,.18)'}" onclick="cycleRoom(${no})" title="${s}"><b>${no}</b><span class="small">${s==='Available'?(lang==='ar'?'خالي':lang==='tr'?'Boş':'Free'):s==='Occupied'?(lang==='ar'?'مشغول':lang==='tr'?'Dolu':'Full'):s==='Cleaning'?(lang==='ar'?'تنظيف':lang==='tr'?'Temizlik':'Clean'):(lang==='ar'?'محجوز':lang==='tr'?'Rezerve':'Resv')}</span></div>`).join('')}
+function cycleRoom(no){roomStates[no]=statusCycle[(statusCycle.indexOf(roomStates[no])+1)%4];renderRack();renderAnalytics()}
+let seedBookings=[{id:1001,guest:'A. Volkov',room:'Royal Penthouse',ci:'2026-11-02',co:'2026-11-06',status:'Confirmed',total:5000},{id:1002,guest:'M. Yılmaz',room:'Deluxe Suite',ci:'2026-11-04',co:'2026-11-08',status:'Pending',total:1680},{id:1003,guest:'S. Krüger',room:'Sea View Villa',ci:'2026-11-10',co:'2026-11-14',status:'Checked-in',total:7400}];
+function bookingsAll(){return bookings.concat(seedBookings)}
+function doBooking(){let r=rooms.find(x=>x.id===activeRoom)||rooms[0],n=nights();let extras=[...selectedVIP].map(id=>addons.find(a=>a.id===id));let sum=r.price*n+extras.reduce((s,a)=>s+a.price,0);bookings.unshift({id:Date.now()%100000,guest:'Website Guest',room:r.title,ci:document.getElementById('ci').value,co:document.getElementById('co').value,status:'Pending',total:sum});extras.forEach(a=>vipOrders.unshift({id:Date.now()+Math.random(),type:a.icon+' '+addName(a),guest:'Website Guest',status:'Pending'}));toast('Reservation sent to Front Desk ✓');renderQueue();renderResTable();document.getElementById('invoiceSec').scrollIntoView({behavior:'smooth'})}
+function renderResTable(){let el=document.getElementById('resTable');if(!el)return;el.innerHTML=`<tr><th>ID</th><th data-i18n-x>Guest</th><th>Room</th><th>${t('checkin')}</th><th>${t('checkout')}</th><th>Status</th><th>Total</th><th>Actions</th></tr>`+bookingsAll().map(b=>`<tr><td>#${b.id}</td><td>${b.guest}</td><td>${b.room}</td><td>${b.ci}</td><td>${b.co}</td><td>${b.status}</td><td class="gold">${money(b.total)}</td><td><button class="ghost" onclick="resAction(${b.id},'confirm')">✓ Confirm</button><button class="ghost" onclick="resAction(${b.id},'in')">↘ In</button><button class="ghost" onclick="resAction(${b.id},'out')">↖ Out</button><button class="ghost" onclick="resModify(${b.id})">📅 Dates</button><button class="ghost" onclick="resAction(${b.id},'cancel')">✕ Cancel</button></td></tr>`).join('')}
+function resAction(id,act){let all=bookingsAll();let b=all.find(x=>x.id===id);if(!b)return;if(act==='confirm')b.status='Confirmed';if(act==='in'){b.status='Checked-in';Object.keys(roomStates).some(k=>{if(roomStates[k]==='Available'){roomStates[k]='Occupied';return true}})}if(act==='out'){b.status='Checked-out';Object.keys(roomStates).some(k=>{if(roomStates[k]==='Occupied'){roomStates[k]='Cleaning';return true}})}if(act==='cancel'){[bookings,seedBookings].forEach(arr=>{let i=arr.findIndex(x=>x.id===id);if(i>-1)arr.splice(i,1)});toast('Reservation cancelled')}renderResTable();renderRack();renderAnalytics()}
+function resModify(id){let all=bookingsAll(),b=all.find(x=>x.id===id);if(!b)return;let v=prompt('New check-out date (YYYY-MM-DD):',b.co);if(v){b.co=v;renderResTable();toast('Dates modified ✓')}}
+function kpis(){let all=bookingsAll(),occ=Math.round(Object.values(roomStates).filter(s=>s==='Occupied'||s==='Reserved').length/Object.keys(roomStates).length*100);let day=bookingsAll().filter(b=>b.status==='Checked-in').reduce((s,b)=>s+b.total,0)||all.reduce((s,b)=>s+b.total,0)/7;let month=day*30;let adr=all.reduce((s,b)=>s+b.total,0)/Math.max(1,all.length);return{occ,day,month,adr,active:all.filter(b=>b.status==='Checked-in').length,vip:vipOrders.length}}
+function renderAnalytics(){let k=kpis(),el=document.getElementById('kpiCards');if(el)el.innerHTML=[['Occupancy Rate',k.occ+'%'],['Daily Revenue',money(k.day)],['Monthly Revenue',money(k.month)],['ADR',money(k.adr)]].map(([l,v])=>`<div class="glass card"><div class="small">${l}</div><div class="kpi">${v}</div></div>`).join('');
+ let c1=document.getElementById('chartOcc');if(c1&&window.Chart){let labels=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],data=labels.map((_,i)=>58+Math.round(Math.sin(i*1.2)*16)+8);window.ch1=new Chart(c1,{type:'line',data:{labels,datasets:[{label:'Occupancy %',data,borderColor:'#D4AF37',backgroundColor:'rgba(212,175,55,.18)',fill:true,tension:.4}]},options:{plugins:{legend:{labels:{color:'#F5F7FA'}}},scales:{x:{ticks:{color:'#9aa'}},y:{ticks:{color:'#9aa'},min:0,max:100}}}})}
+ let c2=document.getElementById('chartRev');if(c2&&window.Chart){window.ch2=new Chart(c2,{type:'bar',data:{labels:['Jan','Feb','Mar','Apr','May','Jun'],datasets:[{label:'Revenue ('+currency+')',data:[210,268,340,395,520,640].map(v=>Math.round(v*fx[currency]*10)),backgroundColor:'rgba(212,175,55,.65)'}]},options:{plugins:{legend:{labels:{color:'#F5F7FA'}}},scales:{x:{ticks:{color:'#9aa'}},y:{ticks:{color:'#9aa'}}}}})}}
+function renderQueue(){let el=document.getElementById('vipQueue');if(!el)return;if(!vipOrders.length)vipOrders=[{id:1,type:'🚘 Airport Transfer — Maybach (GZP)',guest:'A. Volkov · #1001',status:'Pending'},{id:2,type:'🛥️ Yacht Sunset Cruise',guest:'M. Yılmaz · #1002',status:'Dispatched'}];el.innerHTML=vipOrders.map(o=>`<div class="glass card" style="display:flex;gap:10px;align-items:center"><div style="flex:1"><b>${o.type}</b><div class="small">${o.guest} · ${o.status}</div></div>${o.status!=='Completed'?`<button class="ghost" onclick="qAction(${o.id},'approve')">Approve</button><button class="ghost" onclick="qAction(${o.id},'dispatch')">Dispatch</button><button class="ghost" onclick="qAction(${o.id},'complete')">Complete</button>`:'<span class="badge">✔ Completed</span>'}</div>`).join('')}
+function qAction(id,act){let o=vipOrders.find(x=>x.id===id);if(!o)return;o.status=act==='approve'?'Approved':act==='dispatch'?'Dispatched':'Completed';renderQueue();toast('VIP order → '+o.status)}
+
+// --- PANEL B: CMS, hero customizer, media hub, i18n editor, blueprint ---
+function renderCMS(){let el=document.getElementById('cmsTable');if(!el)return;el.innerHTML=`<tr><th>#</th><th>Title</th><th>Base Price</th><th>Cap.</th><th>View</th><th>Badge</th><th>Actions</th></tr>`+rooms.map((r,i)=>`<tr><td>${i+1}</td><td><input value="${r.title}" onchange="rooms[${i}].title=this.value;renderRooms();renderAll()"></td><td><input type="number" value="${r.price}" onchange="rooms[${i}].price=+this.value;renderRooms();renderAll()"></td><td><input type="number" value="${r.cap}" onchange="rooms[${i}].cap=+this.value;renderRooms()"></td><td><input value="${r.view}" onchange="rooms[${i}].view=this.value;renderRooms()"></td><td><input value="${r.badge}" onchange="rooms[${i}].badge=this.value;renderRooms()"></td><td><button class="ghost" onclick="moveRoom(${i},-1)">▲</button><button class="ghost" onclick="moveRoom(${i},1)">▼</button><button class="ghost" onclick="delRoom(${i})">✕</button></td></tr>`).join('');
+ let f=document.getElementById('cmsAddForm');if(f&&!f.dataset.bound){f.dataset.bound='1';f.innerHTML=`<div><div class="cfg-label">New room title</div><input id="nTitle" placeholder="e.g. Presidential Lagoon Suite"></div><div><div class="cfg-label">Base price (TRY)</div><input id="nPrice" type="number" value="2600"></div><div><div class="cfg-label">Capacity</div><input id="nCap" type="number" value="4"></div><div><div class="cfg-label">View</div><input id="nView" value="Private Lagoon & Marina"></div><button class="btn" onclick="addRoom()">＋ Add Room Card</button>`}}
+function addRoom(){rooms.push({id:'r'+Date.now(),title:document.getElementById('nTitle').value||'New Suite',price:+document.getElementById('nPrice').value||999,cap:+document.getElementById('nCap').value||2,view:document.getElementById('nView').value||'Sea View',badge:'NEW',img:'https://images.unsplash.com/photo-1591088398332-8a7791972843?auto=format&fit=crop&w=900&q=85'});renderCMS();renderRooms();toast('Room card added — live on guest front ✓')}
+function delRoom(i){rooms.splice(i,1);renderCMS();renderRooms();renderAll()}
+function moveRoom(i,d){let j=i+d;if(j<0||j>=rooms.length)return;[rooms[i],rooms[j]]=[rooms[j],rooms[i]];renderCMS();renderRooms()}
+function renderHeroCustom(){let el=document.getElementById('heroCustomizer');if(!el)return;el.innerHTML=`<div><div class="cfg-label">Hero title</div><input value="${t('hero_title')}" onchange="translations.en.hero_title=this.value;applyLang()"></div><div><div class="cfg-label">Hero subtitle</div><input value="${t('hero_sub')}" onchange="translations.en.hero_sub=this.value;applyLang()"></div><div><div class="cfg-label">3D rotation speed</div><input type="range" min="0" max="0.02" step="0.001" value="0.003" oninput="if(heroScene)heroScene.autoSpin=+this.value;window.ROT=+this.value" style="accent-color:#D4AF37"></div><div><div class="cfg-label">Lighting intensity</div><input type="range" min="0.5" max="5" step="0.1" value="2.4" oninput="[heroScene,configScene].forEach(s=>{if(s)s.key.intensity=+this.value})" style="accent-color:#D4AF37"></div><div><div class="cfg-label">Gold particle density</div><input type="range" min="0" max="120" step="5" value="55" oninput="setParticles(+this.value)" style="accent-color:#D4AF37"></div><div><div class="cfg-label">Motion graphics</div><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" checked onchange="document.querySelectorAll('.float,.fadein').forEach(e=>e.style.animationPlayState=this.checked?'running':'paused');toast('Motion '+(this.checked?'enabled':'paused'))" style="width:20px;accent-color:#D4AF37"> Enable</label></div>`}
+function setParticles(n){if(!heroScene)return;heroScene.parts.forEach(p=>p.visible=false);for(let i=0;i<Math.min(n,heroScene.parts.length);i++)heroScene.parts[i].visible=true}
+const i18nKeys=['hero_title','hero_sub','book_now','search_title','checkin','checkout','guests','suite_type','cfg_title','lighting','vip_addons','final_invoice','spa','dining','beach','concierge_title','rack_title','res_title','analytics','cms_title','media_hub','i18n_editor'];
+function renderLangEditor(){let el=document.getElementById('i18nTable');if(!el)return;el.innerHTML=`<tr><th>Key</th>${['en','tr','ru','de','ar'].map(l=>`<th>${l.toUpperCase()}</th>`).join('')}</tr>`+i18nKeys.map(k=>`<tr><td class="gold">${k}</td>${['en','tr','ru','de','ar'].map(l=>`<td><input value="${(translations[l][k]||'').replace(/"/g,'&quot;')}" onchange="translations['${l}']['${k}']=this.value;applyLang()"></td>`).join('')}</tr>`).join('')}
+function renderArch(){document.getElementById('archBody').innerHTML=`<h2 class="gold">Tech Stack Architecture Blueprint</h2><p class="small">GrandLuxe production deployment architecture — for portfolio reviewers.</p><hr class="sep">
+${[['1','Front-End','React 18 / Next.js 14 · Tailwind CSS · Framer Motion · Three.js / React Three Fiber (this deployable uses vanilla Three.js + Chart.js CDN for zero-build portability)'],['2','State & i18n','i18next + react-i18next, 5 locales (EN/TR/RU/DE/AR) with automatic RTL flip and live dictionary editing'],['3','Back-End','Python FastAPI (or Node.js/NestJS) REST + WebSocket, JWT RBAC (GUEST / HOTELIER / ADMIN roles shown in the top badge)'],['4','AI Concierge','LLM API (OpenAI / local) with Web Speech API voice I/O in 5 languages, service-request queue wired to Panel A'],['5','Database','PostgreSQL 16 (bookings, rooms, reservations) + Redis (sessions, live room-status pub/sub, rate cache)'],['6','Media','S3 / Cloudflare R2 for hero video loops with procedural canvas fallback so Streamlit Cloud never shows a broken stream'],['7','Deployment','Streamlit Community Cloud wrapper (app.py embeds this single-file app full-screen) · also Netlify/Vercel ready (netlify.toml, vercel.json included)']]
+ .map(([n,a,b])=>`<div class="archstep"><div class="archdot">${n}</div><div><b class="gold">${a}</b><p class="small">${b}</p></div></div>`).join('')}
+<div style="display:flex;gap:10px;margin-top:16px"><button class="btn" onclick="downloadStandalone()">⬇ Download standalone HTML</button><button class="ghost" onclick="closeModal('archModal')">Close</button></div>`}
+function openModal(id){renderArch();document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+function downloadStandalone(){let blob=new Blob(['<!DOCTYPE html>\n'+document.documentElement.outerHTML],{type:'text/html'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='GrandLuxe_Hotel_Suite.html';a.click()}
+
+// --- Mode switcher / RBAC / toasts / nav ---
+function switchMode(m){['guest','panelA','panelB'].forEach(v=>document.getElementById('view_'+v).classList.toggle('hidden',v!==m));document.querySelectorAll('.navlink').forEach(n=>n.classList.toggle('active',n.dataset.nav===m));document.getElementById('rbacBadge').textContent='RBAC: '+(m==='guest'?'GUEST':m==='panelA'?'HOTELIER':'ADMIN');window.scrollTo({top:0});renderAll()}
+document.querySelectorAll('.navlink').forEach(n=>n.onclick=()=>switchMode(n.dataset.nav));
+function toast(msg){let t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2600)}
+function renderFull(){renderRooms();renderAll();renderRack();renderResTable();renderAnalytics();renderQueue();renderCMS();renderHeroCustom();renderMedia();renderLangEditor()}
+function boot(){applyLang();initScenes();renderFull();document.getElementById('ci').value='2026-11-01';document.getElementById('co').value='2026-11-05'}
+document.addEventListener('DOMContentLoaded',boot);
+</script>
+</body></html>
