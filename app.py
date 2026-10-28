@@ -1,49 +1,19 @@
-"""
-GrandLuxe Hotel & Suite — Smart Booking Engine & Management Suite
-Streamlit Community Cloud entrypoint (main file: app.py).
-Fully offline: inlines local Three.js & Chart.js from js/ directly into index.html
-so that Streamlit Cloud iframe NEVER blocks or 404s on script assets.
-"""
+"""GrandLuxe V3 — Atlantis Royal Edition, offline Streamlit entry point."""
 from pathlib import Path
+import re
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.set_page_config(
-    page_title="GrandLuxe Hotel & Suite | Mediterranean",
-    page_icon="✨",
-    layout="wide",
-    initial_sidebar_state="collapsed",
-)
-
-st.markdown("""<style>
-  header, footer, #MainMenu {visibility: hidden !important;}
-  .block-container {padding: 0 !important; margin: 0 !important; max-width: 100% !important;}
-  html, body, .stApp {background: #0B0C10 !important; color: #F5F1E6;}
-  iframe {border: none; width: 100% !important; min-height: 100vh;}
-</style>""", unsafe_allow_html=True)
-
-base_dir = Path(__file__).parent
-html_content = (base_dir / "index.html").read_text(encoding="utf-8")
-
-three_js_path = base_dir / "js" / "three.min.js"
-chart_js_path = base_dir / "js" / "chart.umd.min.js"
-
-# Inject Three.js inline
-if three_js_path.exists():
-    three_code = three_js_path.read_text(encoding="utf-8")
-    if "<!-- INJECT_THREE_JS -->" in html_content:
-        html_content = html_content.replace("<!-- INJECT_THREE_JS -->", f"<script>\n{three_code}\n</script>")
-    else:
-        html_content = html_content.replace('<script src="js/three.min.js"></script>', f"<script>\n{three_code}\n</script>")
-        html_content = html_content.replace('<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>', f"<script>\n{three_code}\n</script>")
-
-# Inject Chart.js inline
-if chart_js_path.exists():
-    chart_code = chart_js_path.read_text(encoding="utf-8")
-    if "<!-- INJECT_CHART_JS -->" in html_content:
-        html_content = html_content.replace("<!-- INJECT_CHART_JS -->", f"<script>\n{chart_code}\n</script>")
-    else:
-        html_content = html_content.replace('<script src="js/chart.umd.min.js"></script>', f"<script>\n{chart_code}\n</script>")
-        html_content = html_content.replace('<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>', f"<script>\n{chart_code}\n</script>")
-
-components.html(html_content, height=1080, scrolling=True)
+st.set_page_config(page_title="GrandLuxe | Atlantis Royal Edition", page_icon="✨", layout="wide", initial_sidebar_state="collapsed")
+st.markdown("""<style>header,footer,#MainMenu{visibility:hidden!important}.block-container{padding:0!important;margin:0!important;max-width:100%!important}html,body,.stApp{background:#0B0C10!important;color:#F5F1E6}iframe{border:0;width:100%!important;min-height:100vh}</style>""",unsafe_allow_html=True)
+base=Path(__file__).parent
+html=(base/"index.html").read_text(encoding="utf-8")
+# Remove external local-file script elements before embedding their contents.
+for name in ("three.min.js","OrbitControls.js","chart.umd.min.js"):
+    html=re.sub(r'<script\s+src=["\']js/'+re.escape(name)+r'["\']\s*>\s*</script>',"",html,flags=re.I)
+three=(base/"js"/"three.min.js").read_text(encoding="utf-8")
+orbit=(base/"js"/"OrbitControls.js").read_text(encoding="utf-8")
+chart=(base/"js"/"chart.umd.min.js").read_text(encoding="utf-8")
+html=html.replace("<!-- INJECT_THREE_JS -->", "<script>\n"+three+"\n</script><script>\n"+orbit+"\n</script>")
+html=html.replace("<!-- INJECT_CHART_JS -->", "<script>\n"+chart+"\n</script>")
+components.html(html,height=1080,scrolling=True)

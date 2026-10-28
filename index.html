@@ -4,8 +4,13 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>GrandLuxe Hotel &amp; Suite — Smart Booking Engine &amp; Management Suite</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@300;400;600&family=Cairo:wght@400;600&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&family=Inter:wght@300;400;600&family=Cairo:wght@400;600&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<script src="js/three.min.js"></script>
+<script src="js/OrbitControls.js"></script>
+<script>if(!window.THREE){document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"><\/script>');}</script>
 <!-- INJECT_THREE_JS -->
+<script src="js/chart.umd.min.js"></script>
+<script>if(!window.Chart){document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>');}</script>
 <!-- INJECT_CHART_JS -->
 <style>
 :root{--obsidian:#0B0C10;--gold:#D4AF37;--white:#F5F7FA;--glass:rgba(255,255,255,.05);--glassbr:rgba(212,175,55,.35)}
@@ -97,6 +102,34 @@ footer{padding:36px 6vw;border-top:1px solid var(--glassbr);text-align:center;op
 @media(max-width:760px){section{padding:38px 5vw}#heroCanvas{height:65vh;min-height:410px}.hero-overlay{padding:0 5vw}.hero-overlay p{font-size:.92rem}#configurator .grid[style*="grid-template-columns"]{grid-template-columns:minmax(0,1fr)!important}#cfg3dCanvas{height:clamp(290px,75vw,440px)}.cms-3d{padding:8px}.mood-controls .modebtn{min-width:calc(33.333% - 8px);padding:8px 7px}.model-url-row{flex-direction:column}.model-url-row .btn{width:100%}.topbar{gap:8px}.topbar>div[style*="flex:1"]{display:none}.navlink{font-size:.75rem;padding:6px}.topbar select{max-width:110px!important}.grid.g2,.grid.g3,.grid.g4{grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))}}
 @media(max-width:420px){.topbar{justify-content:center}.logo{width:100%;text-align:center}.badge#rbacBadge{display:none}.hero-overlay h1{font-size:2rem}.mood-controls{gap:5px}.mood-controls .modebtn{font-size:.72rem;padding:8px 4px}.card{padding:16px}}
 
+
+/* ==== V3 Atlantis The Royal ==== */
+h1,h2,h3,.serif{font-family:'Cormorant Garamond','Playfair Display',Georgia,serif}
+.hero-wrap{position:relative;min-height:88vh;overflow:hidden;background:#070b14}
+#heroVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:.92}
+#heroCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:3;cursor:grab}
+.hero-vignette{position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(180deg,rgba(7,11,20,.55) 0%,rgba(7,11,20,.18) 45%,rgba(7,11,20,.88) 100%)}
+.hero-goldrim{position:absolute;inset:0;z-index:2;pointer-events:none;box-shadow:inset 0 0 140px rgba(212,175,55,.14);background:radial-gradient(ellipse at 50% 100%,rgba(212,175,55,.10),transparent 60%)}
+.hero-overlay{position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;pointer-events:none;padding:0 6vw}
+.hero-overlay h1{font-size:clamp(2.6rem,6vw,5rem);letter-spacing:.14em;font-weight:500;text-transform:uppercase;text-shadow:0 6px 50px rgba(0,0,0,.85)}
+.hero-overlay p{margin-top:16px;opacity:.88;max-width:660px;font-size:1.05rem;letter-spacing:.06em}
+.badge.float{background:linear-gradient(120deg,rgba(212,175,55,.18),rgba(255,236,180,.28),rgba(212,175,55,.18));border:1px solid rgba(212,175,55,.75);box-shadow:0 0 22px rgba(212,175,55,.35);letter-spacing:.22em;font-size:.72rem;padding:7px 18px;position:relative;overflow:hidden}
+.badge.float::after{content:'';position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);animation:shimmer 4.5s infinite}
+@keyframes shimmer{0%{left:-60%}60%,100%{left:130%}}
+.frost{background:rgba(255,255,255,.07);border:1px solid rgba(212,175,55,.4);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-radius:999px;color:#F5F1E6;padding:9px 20px;font-size:.8rem;letter-spacing:.12em;cursor:pointer;transition:.25s}
+.frost:hover{background:rgba(212,175,55,.22);border-color:#D4AF37}
+.hero-pills{position:absolute;left:50%;transform:translateX(-50%);bottom:88px;z-index:5;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;pointer-events:auto}
+.frost.active{background:rgba(212,175,55,.35);border-color:#ffd97a}
+.hero-ctrls{position:absolute;right:18px;bottom:18px;z-index:6;display:flex;gap:10px;pointer-events:auto}
+.telemetry{position:absolute;left:18px;bottom:18px;z-index:5;pointer-events:none;background:rgba(7,11,20,.5);border:1px solid rgba(212,175,55,.35);backdrop-filter:blur(12px);border-radius:14px;padding:12px 16px;font-size:.75rem;letter-spacing:.08em;line-height:1.7;color:#F5F1E6}
+.telemetry b{color:#D4AF37}
+/* Configurator cinematic HUD */
+.cfg-stage{position:relative;overflow:hidden;border-radius:18px;min-height:520px;background:#0a0f18}
+#cfgBack{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:.85}
+#cfg3dCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:2}
+.cfg-hud{position:absolute;z-index:4;top:14px;right:14px;background:rgba(7,11,20,.55);border:1px solid rgba(212,175,55,.35);backdrop-filter:blur(12px);border-radius:14px;padding:10px 14px;font-size:.72rem;letter-spacing:.1em;line-height:1.7;max-width:260px}
+.cfg-hud b{color:#D4AF37}
+
 </style>
 </head>
 <body>
@@ -120,18 +153,36 @@ footer{padding:36px 6vw;border-top:1px solid var(--glassbr);text-align:center;op
 </div>
 <!-- ============ GUEST FRONT ============ -->
 <div id="view_guest">
-<div class="hero-wrap">
+<div class="hero-wrap" id="hero">
+  <video id="heroVideo" autoplay loop muted playsinline preload="auto">
+    <source src="https://videos.pexels.com/video-files/3130284/3130284-uhd_3840_2160_30fps.mp4" type="video/mp4">
+    <source src="https://cdn.coverr.co/videos/coverr-luxury-resort-infinity-pool-1584/1080p.mp4" type="video/mp4">
+    <source src="https://videos.pexels.com/video-files/4002996/4002996-hd_1920_1080_30fps.mp4" type="video/mp4">
+  </video>
+  <canvas id="heroFallbackCanvas" style="position:absolute;inset:0;width:100%;height:100%;z-index:1"></canvas>
   <canvas id="heroCanvas"></canvas>
+  <div class="hero-vignette"></div><div class="hero-goldrim"></div>
   <div class="hero-overlay">
-    <span class="badge float">★★★★★ ALANYA · TÜRKİYE</span>
-    <h1 data-i18n="hero_title">GrandLuxe Hotel &amp; Suite</h1>
-    <p data-i18n="hero_sub">Ultra-luxury smart booking on the Mediterranean. Drag to rotate the 3D scene.</p>
+    <span class="badge float">★★★★★ ALANYA · TÜRKİYE — THE ROYAL COLLECTION</span>
+    <h1 data-i18n="hero_title">This Is It. GrandLuxe Royal</h1>
+    <p data-i18n="hero_sub">THE ADDRESS THAT IS THE STATEMENT — Ultra-luxury smart booking on the Mediterranean. Drag to rotate the 3D scene.</p>
     <div style="pointer-events:auto;margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
       <button class="btn" onclick="document.getElementById('booking').scrollIntoView({behavior:'smooth'})" data-i18n="book_now">Book Now</button>
       <button class="ghost" id="autoRotBtn" onclick="toggleAutoRot()" data-i18n="auto_rot">⟳ Auto-Rotate: ON</button>
-      <button class="ghost" id="soundBtn" onclick="toggleAmbientAudio()">🌊 Waves: OFF</button>
+      <button class="ghost" onclick="toggleAmbientAudio()" id="soundBtn">🌊 Waves: OFF</button>
     </div>
   </div>
+  <div class="hero-pills" id="heroPills">
+    <button class="frost active" onclick="heroPick('royal',this)">Royal Penthouse</button>
+    <button class="frost" onclick="heroPick('villa',this)">Sunset Infinity Villa</button>
+    <button class="frost" onclick="heroPick('spa',this)">Royal Hammam &amp; Spa</button>
+    <button class="frost" onclick="heroPick('yacht',this)">Superyacht Marina</button>
+  </div>
+  <div class="hero-ctrls">
+    <button class="frost" id="heroVideoToggle" onclick="toggleHeroVideo()">⏸ PAUSE FILM</button>
+    <button class="frost" id="heroAudioToggle" onclick="toggleHeroAudio()">🔇 AMBIENT OFF</button>
+  </div>
+  <div class="telemetry" id="heroTelemetry"></div>
 </div>
 
 <section id="booking">
@@ -148,7 +199,7 @@ footer{padding:36px 6vw;border-top:1px solid var(--glassbr);text-align:center;op
 <section id="configurator">
   <h2 class="gold" data-i18n="cfg_title">3D Room Configurator</h2><hr class="sep">
   <div class="grid" style="grid-template-columns:1.4fr 1fr">
-    <div class="glass" style="padding:14px"><canvas id="cfg3dCanvas"></canvas></div>
+    <div class="cfg-stage"><canvas id="cfgBackdropCanvas" style="position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none"></canvas><canvas id="cfg3dCanvas"></canvas><div id="cfgLiveBadge" style="position:absolute;bottom:18px;left:18px;z-index:4;padding:10px 14px;border-radius:12px;background:rgba(4,9,18,.76);backdrop-filter:blur(12px);border:1px solid rgba(212,175,55,.32);pointer-events:none"><div style="font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:#f3d27a">LIVE ARCHITECTURAL TELEMETRY</div><div id="hudSuiteTitle" style="font-family:var(--serif);font-size:1.05rem;color:#fff;margin-top:2px">Royal Sky Penthouse</div><div id="hudSuiteMeta" style="font-size:.74rem;color:#cbd5e1">420 m² · Panoramic Cantilever Pool · Floor 42</div></div></div>
     <div class="glass card">
       <div class="cms-3d" aria-label="3D scene customizer">
         <div class="cfg-label">CMS · Default 3D Showcase Scene</div>
@@ -660,7 +711,7 @@ function buildShowcase(key) {
 
 function applyMood(state, k) {
   const m = moods[k] || moods.day;
-  state.scene.background = new THREE.Color(m.bg);
+  state.scene.background = null; if(state.renderer) state.renderer.setClearColor(0x000000, 0);
   state.ambient.intensity = m.ambient;
   state.key.color.setHex(m.keyColor);
   state.key.intensity = m.key;
@@ -1032,5 +1083,63 @@ function toast(msg){let t=document.createElement('div');t.className='toast';t.te
 function renderFull(){renderRooms();renderAll();renderRack();renderResTable();renderAnalytics();renderQueue();renderCMS();renderHeroCustom();renderMedia();renderLangEditor()}
 function boot(){applyLang();initScenes();renderFull();document.getElementById('ci').value='2026-11-01';document.getElementById('co').value='2026-11-05'}
 document.addEventListener('DOMContentLoaded',boot);
+
+// GrandLuxe V3 · Atlantis Royal Edition controller
+function heroPick(key){
+  if(typeof selectShowcaseScene==='function') selectShowcaseScene(key||'royal');
+  const map={royal:'Royal Sky Penthouse',villa:'Sunset Villa',spa:'Royal Spa Retreat',yacht:'Atlantis Yacht Suite'};
+  const title=document.getElementById('hudSuiteTitle'); if(title) title.textContent=map[key]||map.royal;
+  const select=document.getElementById('sceneSelect'); if(select && [...select.options].some(o=>o.value===key)) select.value=key;
+  const video=document.getElementById('heroVideo'); if(video) video.pause();
+  document.querySelectorAll('[data-hero-pick]').forEach(b=>b.classList.toggle('active',b.dataset.heroPick===key));
+}
+function toggleHeroVideo(){const v=document.getElementById('heroVideo');if(!v)return;if(v.paused){v.play().catch(()=>{});}else v.pause();}
+function toggleHeroAudio(){if(typeof toggleAmbientAudio==='function')toggleAmbientAudio();}
+function syncLivePreviewHUD(){
+ const title=document.getElementById('hudSuiteTitle'),meta=document.getElementById('hudSuiteMeta');
+ if(!title||!meta)return;
+ try{const room=(typeof rooms!=='undefined'&&rooms.find(x=>x.id===activeRoom))||null;
+  if(room){title.textContent=room.title||'Royal Sky Penthouse';meta.textContent=(room.area||'420 m²')+' · '+(room.feature||'Panoramic Cantilever Pool')+' · Floor '+(room.floor||'42');}
+ }catch(e){}
+}
+function initAtlantisBackdrop(canvas){
+ if(!canvas||canvas.__atlantisRunning)return;canvas.__atlantisRunning=true;
+ const ctx=canvas.getContext('2d');if(!ctx)return;
+ function draw(t){if(!canvas.isConnected){canvas.__atlantisRunning=false;return;}
+  const rect=canvas.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2),w=Math.max(1,rect.width),h=Math.max(1,rect.height);
+  if(canvas.width!==Math.round(w*dpr)||canvas.height!==Math.round(h*dpr)){canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);}
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  const sky=ctx.createLinearGradient(0,0,0,h);sky.addColorStop(0,'#172a4a');sky.addColorStop(.42,'#e89b69');sky.addColorStop(.66,'#f6c989');sky.addColorStop(1,'#102d45');ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
+  const sx=w*.72,sy=h*.38,sun=ctx.createRadialGradient(sx,sy,2,sx,sy,Math.max(30,w*.16));sun.addColorStop(0,'rgba(255,238,184,.96)');sun.addColorStop(.22,'rgba(255,204,132,.35)');sun.addColorStop(1,'rgba(255,204,132,0)');ctx.fillStyle=sun;ctx.fillRect(0,0,w,h);
+  const horizon=h*.54;ctx.fillStyle='rgba(17,45,65,.9)';ctx.fillRect(0,horizon,w,h-horizon);
+  // Cantilever infinity pool with animated gold reflections.
+  ctx.beginPath();ctx.moveTo(w*.08,h*.63);ctx.lineTo(w*.92,h*.63);ctx.lineTo(w*.78,h*.91);ctx.lineTo(w*.2,h*.91);ctx.closePath();
+  const water=ctx.createLinearGradient(0,h*.62,0,h);water.addColorStop(0,'rgba(63,180,197,.88)');water.addColorStop(.45,'rgba(22,103,133,.92)');water.addColorStop(1,'rgba(7,35,59,.98)');ctx.fillStyle=water;ctx.fill();
+  ctx.strokeStyle='rgba(255,235,190,.78)';ctx.lineWidth=Math.max(1,w*.002);ctx.beginPath();ctx.moveTo(w*.08,h*.63);ctx.lineTo(w*.92,h*.63);ctx.stroke();
+  for(let i=0;i<24;i++){const y=h*(.66+i*.009),phase=t*.0007+i*2.13,x=(.5+Math.sin(phase)*.38)*w,span=(.025+(.08*(1-i/30)))*w;ctx.strokeStyle=`rgba(255,218,157,${.05+.12*(.5+.5*Math.sin(phase))})`;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x-span/2,y);ctx.lineTo(x+span/2,y);ctx.stroke();}
+  // Distant skyline silhouette.
+  ctx.fillStyle='rgba(12,30,47,.52)';for(let i=0;i<10;i++){const x=i*w/9,bh=h*(.07+((i*17)%9)*.009);ctx.fillRect(x,horizon-bh,w*.025,bh);}
+  requestAnimationFrame(draw);
+ }
+ requestAnimationFrame(draw);
+}
+function installPointerOrbit(canvas,stateGetter){
+ if(!canvas||canvas.__orbitFallback)return;canvas.__orbitFallback=true;let down=false,x0=0,y0=0;
+ canvas.addEventListener('pointerdown',e=>{const s=stateGetter();if(s&&s.controls)return;down=true;x0=e.clientX;y0=e.clientY;canvas.setPointerCapture?.(e.pointerId);canvas.style.cursor='grabbing';});
+ canvas.addEventListener('pointermove',e=>{if(!down)return;const s=stateGetter();if(!s||!s.group)return;const dx=e.clientX-x0,dy=e.clientY-y0;x0=e.clientX;y0=e.clientY;s.group.rotation.y+=dx*.008;s.group.rotation.x=Math.max(-.25,Math.min(.25,s.group.rotation.x+dy*.003));});
+ const end=()=>{down=false;canvas.style.cursor='grab';};canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',end);
+}
+function initAtlantisEdition(){
+ initAtlantisBackdrop(document.getElementById('heroFallbackCanvas'));
+ initAtlantisBackdrop(document.getElementById('cfgBackdropCanvas'));
+ installPointerOrbit(document.getElementById('heroCanvas'),()=>typeof heroScene!=='undefined'?heroScene:null);
+ installPointerOrbit(document.getElementById('cfg3dCanvas'),()=>typeof configScene!=='undefined'?configScene:null);
+ syncLivePreviewHUD();
+}
+// Wrap showcase/config hooks while preserving the existing engine behavior.
+if(typeof replaceShowcase==='function'&&!replaceShowcase.__atlantisHook){const _replaceShowcase=replaceShowcase;replaceShowcase=function(state,key){const result=_replaceShowcase.apply(this,arguments);syncLivePreviewHUD();return result;};replaceShowcase.__atlantisHook=true;}
+if(typeof syncConfigVIP==='function'&&!syncConfigVIP.__atlantisHook){const _syncConfigVIP=syncConfigVIP;syncConfigVIP=function(){const result=_syncConfigVIP.apply(this,arguments);syncLivePreviewHUD();return result;};syncConfigVIP.__atlantisHook=true;}
+document.addEventListener('DOMContentLoaded',initAtlantisEdition,{once:true});
+
 </script>
 </body></html>
