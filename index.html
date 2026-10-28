@@ -891,16 +891,50 @@ function toggleAmbientAudio() {
 
 // Video cinematic panels: CDN video fallback + procedural animated canvas that works offline
 let mediaItems=[
- {id:1,type:'video',title:'Spa & Wellness Loop',url:'https://videos.pexels.com/video-files/3752533/3752533-hd_1920_1080_25fps.mp4',section:'Spa'},
- {id:2,type:'video',title:'Fine Dining Ambience',url:'https://videos.pexels.com/video-files/2620043/2620043-hd_1920_1080_25fps.mp4',section:'Fine Dining Restaurant'},
- {id:3,type:'video',title:'Private Beach Sunset',url:'https://videos.pexels.com/video-files/3129671/3129671-hd_1920_1080_25fps.mp4',section:'Private Beach'}
+ {id:1,type:'image',title:'Ottoman Hammam & Wellness Sanctuary',url:'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1920&q=85',section:'Spa'},
+ {id:2,type:'video',title:'Michelin-Inspired Fine Dining',url:'https://videos.pexels.com/video-files/2620043/2620043-hd_1920_1080_25fps.mp4',poster:'https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=1920&q=85',section:'Fine Dining Restaurant'},
+ {id:3,type:'image',title:'Private Lagoon Beach & Yacht Marina',url:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=85',section:'Private Beach'}
 ];
 const gradients={'Spa':'linear-gradient(120deg,#182826,#4d856f,#d4af37)','Fine Dining Restaurant':'linear-gradient(120deg,#160f11,#704633,#D4AF37)','Private Beach':'linear-gradient(120deg,#173846,#44a9b0,#f6bb6b)','Room Gallery':'linear-gradient(120deg,#222,#806d48,#f2e1bd)'};
 function addFallback(el,section){let c=document.createElement('canvas');c.className='fallback';c.style.cssText=`position:absolute;inset:0;width:100%;height:260px;z-index:0;background:${gradients[section]||gradients.Spa}`;el.appendChild(c);let ctx=c.getContext('2d'),phase=Math.random()*10;function draw(tm){if(!c.isConnected)return;let w=c.clientWidth||800,h=c.clientHeight||260,dpr=devicePixelRatio||1;if(c.width!==w*dpr||c.height!==h*dpr){c.width=w*dpr;c.height=h*dpr}ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);phase+=.008;for(let i=0;i<18;i++){let x=(i*71+Math.sin(phase+i)*36)%w,y=(i*43+Math.cos(phase*.7+i)*24)%h;ctx.beginPath();ctx.ellipse(x,y,45+Math.sin(phase+i)*15,15+Math.cos(phase+i)*8,Math.sin(i)*.5,0,Math.PI*2);ctx.fillStyle=`rgba(255,220,150,${.025+((Math.sin(phase+i)+1)*.018)})`;ctx.fill()}requestAnimationFrame(draw)}requestAnimationFrame(draw)}
-function renderMedia(){document.querySelectorAll('.bmedia').forEach(w=>{let sec=w.dataset.section,m=mediaItems.find(x=>x.section===sec);w.innerHTML='';w.style.cssText='position:relative;min-height:260px';addFallback(w,sec);if(m&&m.type==='video'){let v=document.createElement('video');v.src=m.url;v.autoplay=true;v.muted=true;v.loop=true;v.playsInline=true;v.style.cssText='position:absolute;inset:0;width:100%;height:260px;object-fit:cover;z-index:1;opacity:.75';v.onerror=()=>{v.remove()};w.appendChild(v);let ctrl=document.createElement('button');ctrl.className='ghost';ctrl.textContent='❚❚';ctrl.style.cssText='position:absolute;z-index:4;right:12px;top:12px';ctrl.onclick=()=>{if(v.paused){v.play();ctrl.textContent='❚❚'}else{v.pause();ctrl.textContent='▶'}};w.appendChild(ctrl)}});let grid=document.getElementById('mediaGrid');if(!grid)return;grid.innerHTML=mediaItems.map(m=>`<div class="glass card"><b>${m.title}</b> <span class="gold">· ${m.section}</span><div class="small" style="word-break:break-all;margin:6px 0">${m.type.toUpperCase()} — ${m.url}</div>${m.type==='video'?`<video src="${m.url}" muted loop autoplay playsinline onerror="this.style.display='none'" style="width:100%;max-height:140px;object-fit:cover;border-radius:10px"></video>`:`<img src="${m.url}" style="width:100%;max-height:140px;object-fit:cover;border-radius:10px">`}<div style="display:flex;gap:6px;margin-top:8px"><button class="ghost" onclick="applyMedia(${m.id})">Apply to section ▶</button><button class="ghost" onclick="deleteMedia(${m.id})">Delete ✕</button></div></div>`).join('')}
-function addMediaByUrl(){let u=document.getElementById('mediaUrl').value.trim();if(!u)return toast('Enter a media URL');let s=document.getElementById('mediaSection').value;mediaItems.push({id:Date.now(),type:/\.(mp4|webm|mov)(\?|$)/i.test(u)?'video':'image',title:'Custom media',url:u,section:s});document.getElementById('mediaUrl').value='';renderMedia()}
-function deleteMedia(id){mediaItems=mediaItems.filter(m=>m.id!==id);renderMedia()}
-function applyMedia(id){let m=mediaItems.find(x=>x.id===id);if(m){mediaItems=mediaItems.filter(x=>x.section!==m.section||x.id===id);renderMedia();toast('Media assigned to '+m.section)}}
+function renderMedia(){
+  document.querySelectorAll('.bmedia').forEach(w=>{
+    let sec=w.dataset.section, m=mediaItems.find(x=>x.section===sec);
+    w.innerHTML='';
+    w.style.cssText='position:relative;min-height:280px;overflow:hidden;border-radius:18px';
+    if(m){
+      if(m.type==='video'){
+        let v=document.createElement('video');
+        v.src=m.url; v.autoplay=true; v.muted=true; v.loop=true; v.playsInline=true;
+        if(m.poster) v.poster=m.poster;
+        v.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;filter:brightness(0.85)';
+        v.onerror=()=>{
+          v.style.display='none';
+          if(m.poster){
+            let img=document.createElement('img');
+            img.src=m.poster;
+            img.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;filter:brightness(0.85)';
+            w.appendChild(img);
+          }
+        };
+        w.appendChild(v);
+        let ctrl=document.createElement('button');
+        ctrl.className='ghost'; ctrl.textContent='❚❚';
+        ctrl.style.cssText='position:absolute;z-index:4;right:14px;top:14px;background:rgba(11,12,16,0.6);border:1px solid rgba(212,175,55,0.4)';
+        ctrl.onclick=()=>{if(v.paused){v.play();ctrl.textContent='❚❚'}else{v.pause();ctrl.textContent='▶'}};
+        w.appendChild(ctrl);
+      } else {
+        let img=document.createElement('img');
+        img.src=m.url;
+        img.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;filter:brightness(0.85);transition:transform 6s ease';
+        w.appendChild(img);
+      }
+    }
+  });
+  let grid=document.getElementById('mediaGrid');
+  if(!grid)return;
+  grid.innerHTML=mediaItems.map(m=>`<div class="glass card"><b>${m.title}</b> <span class="gold">· ${m.section}</span><div class="small" style="word-break:break-all;margin:6px 0">${m.type.toUpperCase()} — ${m.url}</div>${m.type==='video'?`<video src="${m.url}" muted loop autoplay playsinline poster="${m.poster||''}" style="width:100%;max-height:140px;object-fit:cover;border-radius:10px"></video>`:`<img src="${m.url}" style="width:100%;max-height:140px;object-fit:cover;border-radius:10px">`}<div style="display:flex;gap:6px;margin-top:8px"><button class="ghost" onclick="applyMedia(${m.id})">Apply to section ▶</button><button class="ghost" onclick="deleteMedia(${m.id})">Delete ✕</button></div></div>`).join('');
+}
 // --- AI Concierge with voice I/O in 5 languages ---
 let ttsOn=false;
 function toggleChat(){let w=document.getElementById('chatWin');w.classList.toggle('open');if(w.classList.contains('open')&&!w.dataset.greeted){w.dataset.greeted='1';let hi={en:'Welcome to GrandLuxe. Ask about breakfast hours, Wi-Fi, pool & spa, transfers, rates or say "book".',tr:'GrandLuxe’a hoş geldiniz. Kahvaltı, Wi-Fi, spa, transfer veya fiyatlar hakkında sorabilirsiniz.',ru:'Добро пожаловать в GrandLuxe. Спросите о завтраке, Wi-Fi, спа, трансфере или ценах.',de:'Willkommen im GrandLuxe. Fragen Sie zu Frühstück, WLAN, Spa, Transfer oder Preisen.',ar:'مرحباً بكم في جراند لوكس. اسأل عن الإفطار أو الواي فاي أو السبا أو النقل أو الأسعار.'};botSay(hi[lang]||hi.en)}}
