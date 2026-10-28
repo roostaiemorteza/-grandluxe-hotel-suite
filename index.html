@@ -43,9 +43,16 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold)}
 .roomcard img,.banner video,.banner canvas.fallback{width:100%;height:230px;object-fit:cover;border-radius:14px;display:block}
 .price{font-size:1.5rem;font-weight:700;color:var(--gold)}
 .kpi{font-size:1.9rem;font-weight:700;color:var(--gold);font-family:'Playfair Display',serif}
-.banner{position:relative;overflow:hidden;border-radius:20px;margin-bottom:14px}
-.banner .btext{position:absolute;inset:auto 0 0 0;padding:22px;background:linear-gradient(transparent,rgba(11,12,16,.9))}
-.banner .bctrl{position:absolute;top:12px;right:12px;display:flex;gap:8px}
+.banner{position:relative;overflow:hidden;border-radius:24px;margin-bottom:28px;min-height:460px;box-shadow:0 20px 50px rgba(0,0,0,0.6);border:1px solid rgba(212,175,55,0.25);transition:all 0.5s cubic-bezier(0.16,1,0.3,1)}
+.banner:hover{border-color:rgba(212,175,55,0.7);box-shadow:0 25px 60px rgba(212,175,55,0.18);transform:translateY(-3px)}
+.banner .bmedia{position:absolute;inset:0;width:100%;height:100%;min-height:460px;overflow:hidden}
+.banner img,.banner video{width:100%;height:100%;min-height:460px;object-fit:cover;display:block;transition:transform 1.2s cubic-bezier(0.16,1,0.3,1);filter:brightness(0.85)}
+.banner:hover img,.banner:hover video{transform:scale(1.04)}
+.banner .btext{position:absolute;inset:auto 0 0 0;padding:40px 48px;background:linear-gradient(180deg,transparent 0%,rgba(11,12,16,0.5) 40%,rgba(11,12,16,0.95) 100%);z-index:3}
+.banner .btext h3{font-size:clamp(1.6rem,2.8vw,2.5rem);font-family:'Playfair Display',serif;letter-spacing:1px;color:#F5F7FA;margin-bottom:8px}
+.banner .btext p{font-size:1.02rem;color:rgba(245,247,250,0.85);max-width:680px;line-height:1.6}
+.banner .btext .banner-tag{display:inline-block;color:var(--gold);font-size:0.75rem;letter-spacing:3px;text-transform:uppercase;font-weight:600;margin-bottom:10px}
+.banner .bctrl{position:absolute;top:20px;right:20px;display:flex;gap:10px;z-index:10}
 table{width:100%;border-collapse:collapse;font-size:.85rem}
 th,td{padding:9px 10px;text-align:left;border-bottom:1px solid rgba(255,255,255,.08)}
 body[dir="rtl"] th,body[dir="rtl"] td{text-align:right}
@@ -169,10 +176,39 @@ footer{padding:36px 6vw;border-top:1px solid var(--glassbr);text-align:center;op
 </section>
 
 <section id="banners">
-  <h2 class="gold" data-i18n="experiences">Cinematic Experiences</h2><hr class="sep">
-  <div class="banner glass"><div class="bmedia" data-section="Spa"></div><div class="btext"><h3 data-i18n="spa">Spa &amp; Wellness — Ottoman Hammam</h3><p class="small" data-i18n="spa_d">Aromatherapy rituals, hammam and hydrotherapy above the sea.</p></div></div>
-  <div class="banner glass"><div class="bmedia" data-section="Fine Dining Restaurant"></div><div class="btext"><h3 data-i18n="dining">Fine Dining Restaurant</h3><p class="small" data-i18n="dining_d">Michelin-inspired Mediterranean gastronomy with sommelier cellar.</p></div></div>
-  <div class="banner glass"><div class="bmedia" data-section="Private Beach"></div><div class="btext"><h3 data-i18n="beach">Private Beach &amp; Yacht Club</h3><p class="small" data-i18n="beach_d">Cleopatra beach, private lagoon and sunset yacht cruises.</p></div></div>
+  <div style="text-align:center;max-width:720px;margin:0 auto 36px">
+    <span class="badge float" style="margin-bottom:12px">BEYOND LUXURY · ATLANTIS STYLE</span>
+    <h2 class="gold" style="font-size:clamp(2rem,3.2vw,3rem)" data-i18n="experiences">Cinematic Experiences</h2>
+    <p class="small" style="margin-top:10px;opacity:0.8">Immerse yourself in world-class wellness sanctuaries, Michelin-inspired culinary artistry, and private Mediterranean yacht expeditions.</p>
+  </div>
+  <hr class="sep">
+  <div class="banner glass">
+    <div class="bmedia" data-section="Spa"></div>
+    <div class="btext">
+      <span class="banner-tag">WELLNESS &amp; RETREAT</span>
+      <h3 data-i18n="spa">Spa &amp; Wellness — Ottoman Hammam</h3>
+      <p data-i18n="spa_d">Aromatherapy rituals, authentic heated marble hammam, and therapeutic hydrotherapy overlooking the azure sea.</p>
+      <div style="margin-top:14px"><button class="btn" onclick="selectRoom('penthouse')">Explore Sanctuary →</button></div>
+    </div>
+  </div>
+  <div class="banner glass">
+    <div class="bmedia" data-section="Fine Dining Restaurant"></div>
+    <div class="btext">
+      <span class="banner-tag">GASTRONOMY EXCELLENCE</span>
+      <h3 data-i18n="dining">Fine Dining Restaurant</h3>
+      <p data-i18n="dining_d">Michelin-inspired Mediterranean gastronomy, world-renowned guest chefs, and curated vintage sommelier cellars.</p>
+      <div style="margin-top:14px"><button class="btn" onclick="selectRoom('deluxe')">Reserve a Table →</button></div>
+    </div>
+  </div>
+  <div class="banner glass">
+    <div class="bmedia" data-section="Private Beach"></div>
+    <div class="btext">
+      <span class="banner-tag">EXCLUSIVE CLUB &amp; HORIZONS</span>
+      <h3 data-i18n="beach">Private Beach &amp; Yacht Club</h3>
+      <p data-i18n="beach_d">Private lagoon cabanas, Cleopatra white-sand shores, and bespoke sunset mega-yacht coastal voyages.</p>
+      <div style="margin-top:14px"><button class="btn" onclick="selectRoom('villa')">Discover Yacht Club →</button></div>
+    </div>
+  </div>
 </section>
 
 <section id="vip">
