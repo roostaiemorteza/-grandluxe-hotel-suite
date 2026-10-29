@@ -192,6 +192,15 @@ h1,h2,h3,.serif{font-family:'Cormorant Garamond','Playfair Display',Georgia,seri
 .tc{font-variant-numeric:tabular-nums;font-size:.72rem;letter-spacing:.08em}
 .live i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#ff4d5e;margin-inline-end:5px;animation:blink 1.2s infinite}
 @keyframes blink{50%{opacity:.25}}
+
+/* GrandLuxe cinematic single-mode layout fixes */
+.hero-pills .frost,.reel-dock .frost{height:auto;max-height:52px;display:inline-flex;flex-direction:row;align-items:center;padding:10px 20px}
+.reel-dock{height:auto;bottom:30px;display:flex;flex-direction:row;gap:10px;flex-wrap:wrap}
+#heroReelDock{top:auto;bottom:30px}
+#cfgReelDock{top:auto;bottom:30px}
+#heroCanvas{visibility:visible!important;opacity:1!important;z-index:1!important}
+#cfgStage{--gl-mode:hybrid}
+
 </style>
 </head>
 <body>
@@ -275,11 +284,7 @@ h1,h2,h3,.serif{font-family:'Cormorant Garamond','Playfair Display',Georgia,seri
       </div>
       <canvas id="cfgBackdropCanvas" style="position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none"></canvas>
       <canvas id="cfg3dCanvas"></canvas>
-      <div class="cfg-modebar" aria-label="Configurator view modes">
-        <button class="frost active" id="cfgFilmMode" type="button" onclick="setConfiguratorMode('film')">🎬 حالت فیلم سینمایی (Full Motion Film)</button>
-        <button class="frost" id="cfgHybridMode" type="button" onclick="setConfiguratorMode('hybrid')">✨ حالت ترکیبی (Motion Film + 3D Drone Orbit)</button>
-        <button class="frost" id="cfg3dMode" type="button" onclick="setConfiguratorMode('3d')">🧊 مدل سه‌بعدی تعاملی (Interactive 3D)</button>
-      </div>
+
       <div class="reel-dock cfg-reel" id="cfgReelDock" role="group" aria-label="Cinematic reel switcher"></div>
       <div class="cine-hud cfg-cine-hud" id="cfgCineHud">
         <button class="frost" id="cfgPlayBtn" type="button" aria-label="Play or pause film">⏸</button>
@@ -808,13 +813,24 @@ function applyMood(state, k) {
   state.ground.intensity = m.ambient * 0.48;
 }
 
-function selectShowcaseScene(key) {
-  if (!showcaseScenes[key]) return;
+function syncSuiteScene(key, button) {
+  key = (key && showcaseScenes[key]) ? key : 'royal';
   activeShowcase = key;
-  for (const state of [heroScene, configScene]) {
-    if (state) replaceShowcase(state, key);
-  }
+  for (const state of [heroScene, configScene]) if (state) replaceShowcase(state, key);
+  const select = document.getElementById('sceneSelect');
+  if (select && Array.from(select.options).some(o => o.value === key)) select.value = key;
+  document.querySelectorAll('#heroPills .frost').forEach(b => {
+    const match = (b.getAttribute('onclick') || '').match(/heroPick\(['"]([^'"]+)/);
+    b.classList.toggle('active', button ? b === button : !!match && match[1] === key);
+  });
+  const titles={royal:'Royal Sky Penthouse',villa:'Sunset Villa',spa:'Royal Spa Retreat',yacht:'Atlantis Yacht Suite'};
+  const title=document.getElementById('hudSuiteTitle'); if(title) title.textContent=titles[key]||titles.royal;
+  ['heroVideo','cfgFilm'].forEach(id=>{const v=document.getElementById(id);if(v&&typeof setFilmScene==='function')setFilmScene(v,key);});
+  const hero=document.getElementById('heroVideo'), film=document.getElementById('cfgFilm');
+  if(hero&&hero.paused)hero.play().catch(()=>{}); if(film&&film.paused)film.play().catch(()=>{});
+  document.querySelectorAll('.reel-dock').forEach(d=>d.querySelectorAll('.frost').forEach((b,i)=>b.classList.toggle('active',Object.keys(showcaseScenes)[i]===key)));
 }
+function selectShowcaseScene(key) { syncSuiteScene(key); }
 
 function replaceShowcase(state, key) {
   if (state.customRoot) {
@@ -943,6 +959,8 @@ function sceneInit(canvasId, isHero) {
 function initScenes() {
   heroScene = sceneInit('heroCanvas', true);
   configScene = sceneInit('cfg3dCanvas', false);
+  if (heroScene || configScene) syncSuiteScene(activeShowcase || 'royal');
+  setConfiguratorMode('hybrid');
   syncConfigVIP();
 }
 
@@ -1173,16 +1191,8 @@ function boot(){applyLang();initScenes();renderFull();document.getElementById('c
 document.addEventListener('DOMContentLoaded',boot);
 
 // GrandLuxe V3 · Atlantis Royal Edition controller
-function heroPick(key,button){
-  if(typeof selectShowcaseScene==='function') selectShowcaseScene(key||'royal');
-  const map={royal:'Royal Sky Penthouse',villa:'Sunset Villa',spa:'Royal Spa Retreat',yacht:'Atlantis Yacht Suite'};
-  const title=document.getElementById('hudSuiteTitle'); if(title) title.textContent=map[key]||map.royal;
-  const select=document.getElementById('sceneSelect'); if(select && [...select.options].some(o=>o.value===key)) select.value=key;
-  document.querySelectorAll('#heroPills .frost').forEach(b=>b.classList.toggle('active',b===button));
-  // Preserve continuous cinema while updating the interactive 3D scene.
-  const v=document.getElementById('heroVideo'); if(v&&v.paused) v.play().catch(()=>{});
-  const cv=document.getElementById('cfgFilm'); if(cv) setFilmScene(cv,key);
-}
+function heroPick(key,button){ syncSuiteScene(key,button); }
+
 function toggleHeroVideo(){const v=document.getElementById('heroVideo');if(!v)return;if(v.paused){v.play().catch(()=>{});}else v.pause();}
 function toggleHeroAudio(){if(typeof toggleAmbientAudio==='function')toggleAmbientAudio();}
 function syncLivePreviewHUD(){
@@ -1234,12 +1244,12 @@ function setFilmScene(video,key){
  const src=list[idx%list.length];if(video.currentSrc&&video.currentSrc===src)return;
  video.innerHTML='<source src="'+src.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" type="video/mp4">';video.load();video.play().catch(()=>{});
 }
+let currentMode = 'hybrid';
 function setConfiguratorMode(mode){
- const stage=document.getElementById('cfgStage');if(!stage)return;stage.dataset.mode=mode;
- document.querySelectorAll('#cfgFilmMode,#cfg3dMode,#cfgHybridMode').forEach(b=>b.classList.remove('active'));
- const active=document.getElementById(mode==='3d'?'cfg3dMode':mode==='hybrid'?'cfgHybridMode':'cfgFilmMode');if(active)active.classList.add('active');
- const film=document.getElementById('cfgFilm');if(film&&film.paused)film.play().catch(()=>{});
- if(configScene){configScene.auto=mode!=='film';if(configScene.controls)configScene.controls.autoRotate=mode!=='film';}
+  currentMode = 'hybrid';
+  const stage=document.getElementById('cfgStage'); if(stage) stage.dataset.mode='hybrid';
+  if(configScene){configScene.auto=true;if(configScene.controls)configScene.controls.autoRotate=true;}
+  const film=document.getElementById('cfgFilm'); if(film&&film.paused)film.play().catch(()=>{});
 }
 function wireCinematicVideos(){
  const hero=document.getElementById('heroVideo'),cfg=document.getElementById('cfgFilm');
@@ -1248,7 +1258,7 @@ function wireCinematicVideos(){
    if(at<sources.length){v.src=sources[at];v.load();v.play().catch(()=>{});}
  });v.addEventListener('playing',()=>{if(v.id==='heroVideo'){const c=document.getElementById('heroFallbackCanvas');if(c)c.style.opacity='0';}});
  v.addEventListener('waiting',()=>{if(v.id==='heroVideo'){const c=document.getElementById('heroFallbackCanvas');if(c)c.style.opacity='1';}});v.play().catch(()=>{});});
- setConfiguratorMode('film');
+ setConfiguratorMode('hybrid');
 }
 function initAtlantisEdition(){
  initAtlantisBackdrop(document.getElementById('heroFallbackCanvas'));
